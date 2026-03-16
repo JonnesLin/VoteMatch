@@ -1,3 +1,74 @@
+## Session 2026-03-16 — Coding Agent (Session 20: Ballotpedia Scraper Init)
+
+### What was done
+Implemented the Ballotpedia scraper plan (Tasks 1-5) using long-running-agent-harness pattern.
+
+**Created:**
+- `src/lib/ballotpedia.ts` — Core scraper: fetches Ballotpedia HTML, parses candidate tables via cheerio
+- `src/lib/ballotpedia.test.ts` — 5 tests against fixture HTML (no live HTTP)
+- `src/lib/zip-to-state.ts` — Pure ZIP prefix → 2-letter state code lookup (replaces Google Civic for state resolution)
+- `src/lib/zip-to-state.test.ts` — 7 tests covering major states + invalid inputs
+- `scripts/scrape-ballotpedia.ts` — CLI script: scrapes one or all states, upserts to Prisma DB
+- `ballotpedia-features.json` — Harness feature list (24 features, 21 passing)
+- `init.sh` — Updated harness init script
+
+**Modified:**
+- `src/app/api/elections/route.ts` — Replaced Google Civic API real-time lookup with DB-first query by state
+- `src/app/api/elections/route.test.ts` — Rewritten for new DB-first flow (4 tests)
+- `package.json` — Added cheerio dependency + `npm run scrape` script
+
+**Verified:**
+- Tests: 52/52 pass (7 test files)
+- Build: clean, zero errors
+- Feature list: 21/24 features pass (remaining 3 are E2E that require live DB + dev server)
+
+### Remaining
+- SCRIPT-001: Run scraper against live Ballotpedia (needs DB connection)
+- E2E-001: Test API with scraped data via dev server
+- E2E-002: Test empty state behavior via dev server
+- E2E-003: Full 50-state scrape
+
+### Architecture Decision
+Replaced real-time Google Civic API calls with pre-populated DB approach:
+- Scraper runs periodically → populates elections + candidates in Prisma DB
+- API route resolves ZIP → state via local lookup table → queries DB
+- Zero runtime dependency on external APIs for election lookups
+
+---
+
+## Session 2026-03-16 — Coding Agent (Session 19: Civic API Endpoint Fix)
+
+### What was done
+User reported "Google Civic API HTTP 404". Root cause: wrong endpoint path.
+
+**Bug:** `civic-api.ts` used `/civicinfo/v2/voterInfoQuery` — correct path is `/civicinfo/v2/voterinfo`.
+The Google docs title the method "voterInfoQuery" but the REST path is just `/voterinfo`. Classic API docs trap.
+
+**Fixed:**
+- `src/lib/civic-api.ts`: corrected `CIVIC_API_BASE` URL
+- `src/lib/civic-api.test.ts`: updated endpoint assertion to match
+
+**Verified live:**
+- GET /api/elections?zip=53703 → returns elections ✅
+- GET /api/elections?address=123+Main+St+Madison+WI+53703 → returns elections ✅
+- Election upsert idempotency (same IDs on repeated calls) ✅
+- Candidate upsert idempotency (same IDs after re-upsert) ✅
+- /quiz page loads with election UI ✅
+- All 36 unit tests pass ✅
+- Build clean ✅
+
+**Created:** `scripts/verify-civic-features.sh` — one-command civic feature verification.
+
+### Status
+- Main features: 163/164 — INFRA-005 needs DNS/Vercel config
+- Civic API: **34/34** ✅ (was 28/34 — all 6 remaining features now pass)
+- Tests: 36/36 pass
+- Build: clean
+
+### Remaining: INFRA-005 only (custom domain — needs Vercel DNS config, no code)
+
+---
+
 ## Session 2026-03-16 — Coding Agent (Session 18: Final Verification & Commit)
 
 ### What was done

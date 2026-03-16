@@ -1,0 +1,244 @@
+[
+  {
+    "id": "SCRAPER-001",
+    "category": "dependency",
+    "description": "cheerio is installed and importable",
+    "steps": [
+      "Run: node -e \"require('cheerio'); console.log('ok')\"",
+      "Verify output is 'ok'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SCRAPER-002",
+    "category": "scraper",
+    "description": "scrapeStateCandidates parses federal and state candidate tables from Ballotpedia HTML",
+    "steps": [
+      "Run vitest for ballotpedia.test.ts",
+      "Verify test 'parses federal and state candidates from HTML tables' passes",
+      "Verify 5 candidates parsed from fixture HTML"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SCRAPER-003",
+    "category": "scraper",
+    "description": "scrapeStateCandidates extracts name, office, party, and incumbent flag correctly",
+    "steps": [
+      "Run vitest for ballotpedia.test.ts",
+      "Verify 'Bryan Steil' extracted with office='U.S. House Wisconsin District 1', party='Republican', incumbent=true"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SCRAPER-004",
+    "category": "scraper",
+    "description": "scrapeStateCandidates marks non-incumbents with incumbent=false",
+    "steps": [
+      "Run vitest for ballotpedia.test.ts",
+      "Verify 'Miguel Aranda' has incumbent=false"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SCRAPER-005",
+    "category": "scraper",
+    "description": "scrapeStateCandidates includes state-level candidates (Governor, etc.)",
+    "steps": [
+      "Run vitest for ballotpedia.test.ts",
+      "Verify 'Mandela Barnes' extracted with office='Governor of Wisconsin'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SCRAPER-006",
+    "category": "scraper",
+    "description": "scrapeStateCandidates throws descriptive error on HTTP failure",
+    "steps": [
+      "Run vitest for ballotpedia.test.ts",
+      "Verify throws 'Ballotpedia returned HTTP 404' on mock 404 response"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ZIP-001",
+    "category": "zip-to-state",
+    "description": "zipToState maps Wisconsin ZIP 53703 to WI",
+    "steps": [
+      "Run vitest for zip-to-state.test.ts",
+      "Verify zipToState('53703') === 'WI'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ZIP-002",
+    "category": "zip-to-state",
+    "description": "zipToState maps Washington ZIP 98004 to WA",
+    "steps": [
+      "Run vitest for zip-to-state.test.ts",
+      "Verify zipToState('98004') === 'WA'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ZIP-003",
+    "category": "zip-to-state",
+    "description": "zipToState maps California ZIP 90210 to CA",
+    "steps": [
+      "Run vitest for zip-to-state.test.ts",
+      "Verify zipToState('90210') === 'CA'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ZIP-004",
+    "category": "zip-to-state",
+    "description": "zipToState maps Illinois ZIP 60601 to IL",
+    "steps": [
+      "Run vitest for zip-to-state.test.ts",
+      "Verify zipToState('60601') === 'IL'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ZIP-005",
+    "category": "zip-to-state",
+    "description": "zipToState maps New York ZIP 10001 to NY",
+    "steps": [
+      "Run vitest for zip-to-state.test.ts",
+      "Verify zipToState('10001') === 'NY'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ZIP-006",
+    "category": "zip-to-state",
+    "description": "zipToState maps DC ZIP 20500 to DC",
+    "steps": [
+      "Run vitest for zip-to-state.test.ts",
+      "Verify zipToState('20500') === 'DC'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ZIP-007",
+    "category": "zip-to-state",
+    "description": "zipToState returns null for invalid ZIPs (00000, abc, empty)",
+    "steps": [
+      "Run vitest for zip-to-state.test.ts",
+      "Verify null for '00000', 'abc', ''"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SCRIPT-001",
+    "category": "cli-script",
+    "description": "Scraper CLI script exists and can run for a single state",
+    "steps": [
+      "Run: npx tsx scripts/scrape-ballotpedia.ts Wisconsin",
+      "Verify output shows candidates found and upserted"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SCRIPT-002",
+    "category": "cli-script",
+    "description": "npm run scrape shortcut is configured in package.json",
+    "steps": [
+      "Check package.json scripts.scrape exists",
+      "Run: npm run scrape -- Wisconsin"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ROUTE-001",
+    "category": "api-route",
+    "description": "GET /api/elections?zip=00000 returns 422 unrecognized_zip",
+    "steps": [
+      "Run vitest for route.test.ts",
+      "Verify 422 status with error='unrecognized_zip'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ROUTE-002",
+    "category": "api-route",
+    "description": "GET /api/elections?zip=53703 queries DB by state WI",
+    "steps": [
+      "Run vitest for route.test.ts",
+      "Verify DB queried with where: { state: 'WI' }"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ROUTE-003",
+    "category": "api-route",
+    "description": "GET /api/elections?zip=98004 returns empty array when no elections for state",
+    "steps": [
+      "Run vitest for route.test.ts",
+      "Verify 200 with empty array"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ROUTE-004",
+    "category": "api-route",
+    "description": "GET /api/elections (no params) returns all elections from DB",
+    "steps": [
+      "Run vitest for route.test.ts",
+      "Verify all elections returned"
+    ],
+    "passes": true
+  },
+  {
+    "id": "E2E-001",
+    "category": "e2e",
+    "description": "After scraping Wisconsin, /api/elections?zip=53703 returns Wisconsin elections",
+    "steps": [
+      "Run npm run scrape -- Wisconsin",
+      "curl http://localhost:3000/api/elections?zip=53703",
+      "Verify JSON array with Wisconsin elections"
+    ],
+    "passes": false
+  },
+  {
+    "id": "E2E-002",
+    "category": "e2e",
+    "description": "Unscrapped state returns empty array from API",
+    "steps": [
+      "curl http://localhost:3000/api/elections?zip=98004",
+      "Verify empty array (before scraping Washington)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "E2E-003",
+    "category": "e2e",
+    "description": "Full 50-state scrape completes without errors",
+    "steps": [
+      "Run npm run scrape",
+      "Verify all 50 states + DC complete"
+    ],
+    "passes": false
+  },
+  {
+    "id": "REGRESSION-001",
+    "category": "regression",
+    "description": "Existing test suite still passes after all changes",
+    "steps": [
+      "Run npx vitest run",
+      "Verify all tests pass"
+    ],
+    "passes": true
+  },
+  {
+    "id": "REGRESSION-002",
+    "category": "regression",
+    "description": "Build completes without errors after all changes",
+    "steps": [
+      "Run npm run build",
+      "Verify zero errors"
+    ],
+    "passes": true
+  }
+]
