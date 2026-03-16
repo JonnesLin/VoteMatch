@@ -27,7 +27,7 @@ jobs:
 
   pipeline:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.PIPELINE_ENABLED == 'true'
     needs: test
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -41,4 +41,4 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - name: Run pipeline for all elections
-        run: npx tsx scripts/run-pipeline.ts --election all || echo "Pipeline run completed with warnings"
+        run: npx tsx scripts/run-pipeline.ts --election all
