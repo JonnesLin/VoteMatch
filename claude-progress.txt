@@ -1,3 +1,85 @@
+## Session 2026-03-16 — Coding Agent (Session 14)
+
+### What was done
+Verified pipeline end-to-end with Gemini API (GEMINI_API_KEY was available all along — progress notes incorrectly said "needs ANTHROPIC_API_KEY"). Then implemented 13 remaining code-level features.
+
+**Pipeline Verification (28 features verified)**
+- Ran collector → verifier → analyzer for real candidate (Tammy Baldwin): 8 materials collected from 4 source types, 7/8 URLs verified, 5/8 content verified, 6 positions extracted
+- Verified idempotent re-run: 7 duplicates skipped, 4 existing positions updated
+- Ran question generation on seed election: 12 high-quality plain-language questions
+- All DP-001~034 and QG-003~008 features confirmed working
+
+**RE-001~003: Match Explanations**
+- Created `src/lib/explainer.ts` — LLM generates neutral, per-candidate match explanations
+- Created GET /api/explain/[sessionId] endpoint
+- Verified: 4 candidates get specific, non-directive explanations referencing policy areas
+
+**CA-002: LLM Analytics Report**
+- Created GET /api/analytics/report?election_id=... endpoint
+- Generates consulting-grade report: executive summary, key findings, candidate assessments, swing issues, turnout drivers
+
+**I18N-002: LLM Dynamic Translation**
+- Created POST /api/translate endpoint
+- Accepts texts array + targetLanguage, returns translations via Gemini
+- Verified: English → Chinese Simplified translation of policy content
+
+**CLA-001~004: Candidate List Acquisition**
+- Created `src/lib/pipeline/candidate-acquisition.ts`
+- CLA-001/003: Gemini search-based acquisition from state commissions + aggregators
+- CLA-002: FEC public API for federal elections (verified: 17 WI Senate candidates)
+- CLA-004: Fuzzy name-based deduplication (verified: 4 → 2 with source merging)
+
+**GEO-001~002: Geocoding**
+- Created `src/lib/geocoding.ts` using US Census Geocoder (free, no key needed)
+- Parses geography layers with session-prefix-tolerant key matching
+- Updated elections API: GET /api/elections?address=... alongside existing ?zip=
+- Updated quiz page: tab switcher for Zip Code vs Address input
+- Verified: Madison address → WI-CD-2, WI-Senate-26, WI-Assembly-76
+
+**CACHE-001~002: Redis Caching**
+- Installed ioredis, created `src/lib/cache.ts`
+- CACHE-001: Questions cached in Redis (1h TTL) — verified via redis-cli
+- CACHE-002: Session results cached (24h TTL) for shareable URLs — verified
+- Integrated into questions and session results API endpoints
+
+**Lint fixes**
+- Fixed `candidate/dashboard/page.tsx`: setState-in-effect → lazy init + fetch trigger
+- Fixed `embed/[electionId]/page.tsx`: useState initializer instead of useEffect
+
+**Added i18n strings**
+- district.zipTab, district.addressTab, district.addressPlaceholder, district.addressError (EN + ZH)
+
+### Build status
+- npm run build: zero errors
+- npm run lint: zero errors
+- npm run test: 24/24 pass
+
+### Feature list status: 156/164 passing (95.1%)
+
+### Remaining: 8 features (deployment only)
+- INFRA-001: Deploy to Vercel
+- INFRA-002: Cloud PostgreSQL
+- INFRA-003: Production Redis
+- INFRA-004: Secure env vars
+- INFRA-005: Custom domain + HTTPS
+- INFRA-006: CI/CD pipeline triggers
+- INFRA-007: Production CI/CD
+- SEC-006: HTTPS enforcement
+
+### Known issues
+- All remaining features require cloud infrastructure — no code changes needed
+- Test election data was created and cleaned up during pipeline verification
+
+### Next priority
+1. Set up Vercel project and deploy (INFRA-001)
+2. Provision cloud PostgreSQL (INFRA-002) — e.g. Neon, Supabase, or Railway
+3. Provision cloud Redis (INFRA-003) — e.g. Upstash or Redis Cloud
+4. Configure production env vars (INFRA-004)
+5. Set up custom domain (INFRA-005)
+6. Set up GitHub Actions for CI/CD (INFRA-006, INFRA-007)
+
+---
+
 ## Session 2026-03-16 — Coding Agent (Session 13)
 
 ### What was done

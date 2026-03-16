@@ -8,7 +8,7 @@
  * 4. Storing as QuestionSet linked to the election
  */
 
-import { getClaude } from "../claude";
+import { getGeminiModel } from "../gemini";
 import { prisma } from "../db";
 
 const MIN_QUESTIONS = 8;
@@ -200,20 +200,12 @@ export async function generateQuestions(
 ): Promise<GeneratedQuestion[]> {
   if (issues.length === 0) return [];
 
-  const response = await getClaude().messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 8192,
-    system: QUESTION_GEN_SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: buildQuestionGenPrompt(issues),
-      },
-    ],
+  const model = getGeminiModel({
+    systemInstruction: QUESTION_GEN_SYSTEM_PROMPT,
   });
 
-  const textBlocks = response.content.filter((b) => b.type === "text");
-  const fullText = textBlocks.map((b) => b.text).join("\n");
+  const response = await model.generateContent(buildQuestionGenPrompt(issues));
+  const fullText = response.response.text();
 
   const validIssueIds = new Set(issues.map((i) => i.issueId));
   return parseQuestionGenResponse(fullText, validIssueIds);

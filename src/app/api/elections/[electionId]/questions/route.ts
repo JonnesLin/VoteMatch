@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getCachedQuestions, cacheQuestions } from "@/lib/cache";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ electionId: string }> }
 ) {
   const { electionId } = await params;
+
+  // CACHE-001: Check Redis cache first
+  const cached = await getCachedQuestions(electionId);
+  if (cached) {
+    return NextResponse.json(cached);
+  }
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },
@@ -52,6 +59,9 @@ export async function GET(
     background: q.background,
     displayOrder: q.displayOrder,
   }));
+
+  // CACHE-001: Store in Redis
+  await cacheQuestions(electionId, questions);
 
   return NextResponse.json(questions);
 }

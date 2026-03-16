@@ -32,21 +32,37 @@ const SCORE_OPTIONS = [
 
 export default function DashboardPage() {
   const { t } = useT();
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("votematch_token") ?? "";
+  });
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editSummary, setEditSummary] = useState("");
   const [editScore, setEditScore] = useState(0);
   const [editNotes, setEditNotes] = useState("");
+  const [fetchTrigger, setFetchTrigger] = useState(0);
 
   useEffect(() => {
-    const saved = localStorage.getItem("votematch_token");
-    if (saved) {
-      setToken(saved);
-      loadPositions(saved);
-    }
-  }, []);
+    if (!token) return;
+    let cancelled = false;
+    fetch("/api/candidates/me/positions", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (cancelled) return;
+        if (result.error) {
+          setError(result.error);
+        } else {
+          setData(result);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [token, fetchTrigger]);
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -67,19 +83,7 @@ export default function DashboardPage() {
     }
     setToken(result.token);
     localStorage.setItem("votematch_token", result.token);
-    loadPositions(result.token);
-  }
-
-  async function loadPositions(authToken: string) {
-    const res = await fetch("/api/candidates/me/positions", {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-    const result = await res.json();
-    if (!res.ok) {
-      setError(result.error);
-      return;
-    }
-    setData(result);
+    // Effect on token change will trigger position loading
   }
 
   async function savePosition(issueId: string) {
@@ -103,7 +107,7 @@ export default function DashboardPage() {
       return;
     }
     setEditingId(null);
-    loadPositions(token);
+    setFetchTrigger((n) => n + 1);
   }
 
   function startEdit(pos: Position) {

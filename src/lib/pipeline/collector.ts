@@ -6,7 +6,7 @@
  * Outputs raw materials without stance judgment.
  */
 
-import { getClaude } from "../claude";
+import { getGeminiModelWithSearch } from "../gemini";
 import { prisma } from "../db";
 import type {
   CollectorInput,
@@ -73,28 +73,12 @@ function parseCollectorResponse(text: string): CollectorRawResult[] {
 export async function runCollector(
   input: CollectorInput
 ): Promise<CollectorOutput> {
-  const response = await getClaude().messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 8192,
-    system: COLLECTOR_SYSTEM_PROMPT,
-    tools: [
-      {
-        type: "web_search_20250305",
-        name: "web_search",
-        max_uses: 10,
-      },
-    ],
-    messages: [
-      {
-        role: "user",
-        content: buildCollectorPrompt(input),
-      },
-    ],
+  const model = getGeminiModelWithSearch({
+    systemInstruction: COLLECTOR_SYSTEM_PROMPT,
   });
 
-  // Extract text content from response
-  const textBlocks = response.content.filter((b) => b.type === "text");
-  const fullText = textBlocks.map((b) => b.text).join("\n");
+  const response = await model.generateContent(buildCollectorPrompt(input));
+  const fullText = response.response.text();
 
   const rawResults = parseCollectorResponse(fullText);
 

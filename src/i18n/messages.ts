@@ -18,8 +18,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     // District selection
     "district.title": "Find Your Election",
     "district.subtitle": "Enter your zip code to see elections in your area.",
+    "district.zipTab": "Zip Code",
+    "district.addressTab": "Address",
     "district.zipPlaceholder": "e.g. 53703",
+    "district.addressPlaceholder": "e.g. 123 Main St, Madison, WI 53703",
     "district.zipError": "Please enter a valid 5-digit zip code.",
+    "district.addressError": "Please enter a street address.",
     "district.searching": "Searching...",
     "district.search": "Search",
     "district.noElections":
@@ -133,8 +137,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     // District selection
     "district.title": "查找你的选举",
     "district.subtitle": "输入邮编查看你所在地区的选举。",
+    "district.zipTab": "邮编",
+    "district.addressTab": "地址",
     "district.zipPlaceholder": "例如 53703",
+    "district.addressPlaceholder": "例如 123 Main St, Madison, WI 53703",
     "district.zipError": "请输入有效的5位邮编。",
+    "district.addressError": "请输入街道地址。",
     "district.searching": "搜索中...",
     "district.search": "搜索",
     "district.noElections":

@@ -537,7 +537,7 @@
   {
     "id": "NAV-001",
     "category": "navigation",
-    "description": "Full user flow works end-to-end: landing \u2192 district \u2192 quiz \u2192 results",
+    "description": "Full user flow works end-to-end: landing → district → quiz → results",
     "steps": [
       "Start at landing page",
       "Click Get Started",
@@ -574,7 +574,7 @@
   {
     "id": "PRIVACY-001",
     "category": "privacy",
-    "description": "User sessions are anonymous \u2014 no PII stored",
+    "description": "User sessions are anonymous — no PII stored",
     "steps": [
       "Complete a quiz",
       "Check user_sessions table",
@@ -588,7 +588,7 @@
     "category": "privacy",
     "description": "No user registration required for core voter flow",
     "steps": [
-      "Navigate through entire flow: landing \u2192 district \u2192 quiz \u2192 results",
+      "Navigate through entire flow: landing → district → quiz → results",
       "Verify no login/signup prompt appears",
       "Verify no authentication headers required in API calls"
     ],
@@ -608,7 +608,7 @@
   {
     "id": "PERF-002",
     "category": "performance",
-    "description": "Match calculation completes within 500ms for 15 questions \u00d7 5 candidates",
+    "description": "Match calculation completes within 500ms for 15 questions × 5 candidates",
     "steps": [
       "Set up 5 candidates with 15 issue positions each",
       "Submit 15 answers via /api/match",
@@ -811,7 +811,7 @@
       "Verify output includes /issues, /platform, /about page content if found",
       "Verify 'not found' is explicitly marked if no official website exists"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-002",
@@ -823,7 +823,7 @@
       "Verify source_type is 'voting_record'",
       "Verify raw_text contains relevant vote descriptions"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-003",
@@ -835,7 +835,7 @@
       "Verify source_type is 'news'",
       "Verify raw_text contains policy-relevant excerpts"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-004",
@@ -847,7 +847,7 @@
       "Verify source_type is 'social_media'",
       "Verify only policy-relevant posts are included"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-005",
@@ -859,7 +859,7 @@
       "Verify no stance judgments are made in raw_text (pure collection)",
       "Verify results are stored in RawMaterial table"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-006",
@@ -870,7 +870,7 @@
       "Verify each source type (official_website, voting_record, news, social_media) is attempted",
       "Verify source types with no results are marked as 'not found' in output"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-010",
@@ -882,7 +882,7 @@
       "Verify HTTP 200 responses set url_verified = true",
       "Verify non-200 responses set url_verified = false"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-011",
@@ -894,7 +894,7 @@
       "Verify matching content sets content_verified = true",
       "Verify non-matching content sets content_verified = false"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-012",
@@ -906,7 +906,7 @@
       "Verify record is flagged with url_verified = false",
       "Verify flagged records are excluded from analyzer input"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-020",
@@ -918,7 +918,7 @@
       "Verify output contains CandidatePosition records",
       "Verify each position has issue_id, position_summary, position_score"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-021",
@@ -930,7 +930,7 @@
       "Verify strongly opposing positions get score near -2",
       "Verify neutral/ambiguous positions get score near 0"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-022",
@@ -942,7 +942,7 @@
       "Verify positions from single news mention get 'medium' or 'low'",
       "Verify positions with no direct evidence get 'low'"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-023",
@@ -953,7 +953,7 @@
       "Verify low-confidence positions have notes containing 'Position unclear'",
       "Verify these are not force-classified into a strong stance"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-024",
@@ -965,7 +965,7 @@
       "Verify output notes indicate no substantive position found",
       "Verify position is not fabricated from vague language"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-025",
@@ -977,7 +977,7 @@
       "Verify notes field describes the contradiction",
       "Verify supporting_evidence includes quotes from both stances"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-026",
@@ -989,7 +989,7 @@
       "Verify each evidence item has raw_material_id referencing source",
       "Verify relevant_quote contains the actual text supporting the judgment"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-027",
@@ -1001,12 +1001,12 @@
       "Verify each position references a valid issue_id from IssueCategory table",
       "Verify no positions reference non-existent issue categories"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-030",
     "category": "pipeline-orchestration",
-    "description": "End-to-end pipeline runs: candidate \u2192 collector \u2192 verification \u2192 analyzer \u2192 positions",
+    "description": "End-to-end pipeline runs: candidate → collector → verification → analyzer → positions",
     "steps": [
       "Provide a candidate name, office, and district",
       "Run full pipeline",
@@ -1014,19 +1014,19 @@
       "Verify URL verification runs on all records",
       "Verify CandidatePosition records are created from verified materials"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-031",
     "category": "pipeline-orchestration",
-    "description": "Pipeline is idempotent \u2014 re-running does not create duplicates",
+    "description": "Pipeline is idempotent — re-running does not create duplicates",
     "steps": [
       "Run pipeline for a candidate",
       "Run pipeline again for the same candidate",
       "Verify no duplicate RawMaterial records",
       "Verify CandidatePosition records are updated, not duplicated"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-032",
@@ -1039,7 +1039,7 @@
       "Verify only new sources are collected and analyzed",
       "Verify existing positions are updated if new evidence changes them"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DP-033",
@@ -1052,7 +1052,7 @@
       "Verify analyzer runs for each candidate",
       "Verify all candidates have CandidatePosition records"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "QG-001",
@@ -1088,7 +1088,7 @@
       "Verify output contains question_text, positive_direction, background per issue",
       "Verify reading_level_check passes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "QG-004",
@@ -1100,7 +1100,7 @@
       "Verify short sentences with simple vocabulary",
       "Verify one concept per question"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "QG-005",
@@ -1112,7 +1112,7 @@
       "Verify positive_direction clearly states what 'agree' means",
       "Verify score mapping is consistent with positive_direction"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "QG-006",
@@ -1124,7 +1124,7 @@
       "Verify background uses plain language (no jargon)",
       "Verify background provides relevant context for the issue"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "QG-007",
@@ -1136,7 +1136,7 @@
       "Verify Question records created with question_set_id",
       "Verify questions have display_order assigned"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "QG-008",
@@ -1149,7 +1149,7 @@
       "Verify new QuestionSet is created",
       "Verify questions reflect updated divergence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "QG-009",
@@ -1173,7 +1173,7 @@
       "Verify output contains a brief match summary per candidate",
       "Verify explanation references specific issues where user and candidate agree/disagree"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "RE-002",
@@ -1185,7 +1185,7 @@
       "Verify wording focuses on policy alignment, not endorsement",
       "Verify tone is informational, not persuasive"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "RE-003",
@@ -1197,7 +1197,7 @@
       "Verify cache invalidation when positions change",
       "Verify fallback to live LLM generation when cache miss"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CP-001",
@@ -1255,7 +1255,7 @@
   {
     "id": "CP-005",
     "category": "candidate-auth",
-    "description": "Candidate portal routes are protected \u2014 require authentication",
+    "description": "Candidate portal routes are protected — require authentication",
     "steps": [
       "Navigate to /candidate/dashboard without auth",
       "Verify redirect to login page",
@@ -1405,7 +1405,7 @@
     "description": "GET /api/candidates/me/insights returns anonymized voter data",
     "steps": [
       "Authenticate as claimed candidate",
-      "Ensure \u226550 user sessions exist for the election",
+      "Ensure ≥50 user sessions exist for the election",
       "Send GET to /api/candidates/me/insights",
       "Verify 200 status with aggregated data",
       "Verify no individual user data is identifiable"
@@ -1485,7 +1485,7 @@
       "Verify report includes issue priority analysis and strategy recommendations",
       "Verify report is downloadable"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CA-003",
@@ -1599,7 +1599,7 @@
   {
     "id": "SEC-001",
     "category": "security",
-    "description": "Candidate insights API returns only aggregated data \u2014 no individual sessions",
+    "description": "Candidate insights API returns only aggregated data — no individual sessions",
     "steps": [
       "Request insights for an election with 100+ sessions",
       "Verify response contains aggregate metrics only",
@@ -1659,7 +1659,7 @@
   {
     "id": "SEC-006",
     "category": "security",
-    "description": "HTTPS enforced in production \u2014 HTTP redirects to HTTPS",
+    "description": "HTTPS enforced in production — HTTP redirects to HTTPS",
     "steps": [
       "Access production site via HTTP",
       "Verify redirect to HTTPS",
@@ -1676,7 +1676,7 @@
       "Complete several quizzes (some partial, some full)",
       "Query completion rate metric",
       "Verify rate = (completed sessions / total sessions) * 100",
-      "Verify target is >70% per PRD \u00a79"
+      "Verify target is >70% per PRD §9"
     ],
     "passes": true
   },
@@ -1687,7 +1687,7 @@
     "steps": [
       "Run pipeline for a candidate",
       "View raw materials and extracted positions",
-      "Verify audit trail from source_url \u2192 raw_text \u2192 position_summary",
+      "Verify audit trail from source_url → raw_text → position_summary",
       "Verify quality can be spot-checked by human reviewer"
     ],
     "passes": true
@@ -1711,7 +1711,7 @@
     "steps": [
       "Query coverage for a target election",
       "Verify coverage = (candidates with positions / total candidates) * 100",
-      "Verify target is 100% for target district per PRD \u00a79"
+      "Verify target is 100% for target district per PRD §9"
     ],
     "passes": true
   },
@@ -1725,7 +1725,7 @@
       "Verify Election records are created with name, type, district, state, election_date, status",
       "Verify Candidate records are created with name, party, incumbent, official_website"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CLA-002",
@@ -1737,7 +1737,7 @@
       "Verify party and incumbent status are populated",
       "Verify data matches FEC source"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CLA-003",
@@ -1749,7 +1749,7 @@
       "Verify data supplements state/FEC sources",
       "Verify official_website is populated when available"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CLA-004",
@@ -1761,7 +1761,7 @@
       "Verify merged record has the most complete data",
       "Verify election-candidate relationships are correct"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "GEO-001",
@@ -1773,7 +1773,7 @@
       "Enter a street address",
       "Verify system resolves address to correct district and elections"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "GEO-002",
@@ -1785,7 +1785,7 @@
       "Verify works for federal, state, and local districts",
       "Verify fallback to zip-based lookup when geocoding fails"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "I18N-002",
@@ -1797,7 +1797,7 @@
       "Verify translation quality is natural and accurate",
       "Verify translated content is cached to avoid redundant LLM calls"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CACHE-001",
@@ -1810,7 +1810,7 @@
       "Verify second request is served from Redis cache, not DB",
       "Verify cache is invalidated when QuestionSet is regenerated"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CACHE-002",
@@ -1823,7 +1823,7 @@
       "Verify cached results are returned without recalculation",
       "Verify cache TTL is appropriate"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "ISSUE-001",
@@ -1868,8 +1868,8 @@
     "description": "Admin can approve or reject candidate profile claims",
     "steps": [
       "View pending claim requests in admin interface",
-      "Approve a claim \u2014 verify candidate.claimed = true",
-      "Reject a claim \u2014 verify candidate.claimed remains false",
+      "Approve a claim — verify candidate.claimed = true",
+      "Reject a claim — verify candidate.claimed remains false",
       "Verify claimant is notified of decision"
     ],
     "passes": true
@@ -1880,12 +1880,12 @@
     "description": "Pre-election full scrape cycle runs for all candidates in target election",
     "steps": [
       "Configure target election for full scrape",
-      "Run full scrape \u2014 collector + verification + analyzer for ALL candidates",
+      "Run full scrape — collector + verification + analyzer for ALL candidates",
       "Verify all candidates have fresh RawMaterial and CandidatePosition records",
       "Verify existing stale data is updated, not duplicated",
       "Verify full scrape is distinct from incremental updates"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "PROV-001",
@@ -1894,7 +1894,7 @@
     "steps": [
       "View a candidate position in results page",
       "Verify source attribution links to original source_url",
-      "Trace backward: position \u2192 supporting_evidence \u2192 raw_material \u2192 source_url",
+      "Trace backward: position → supporting_evidence → raw_material → source_url",
       "Verify every link in the chain is intact and verifiable",
       "Verify access_date shows when data was collected"
     ],
@@ -1905,9 +1905,9 @@
     "category": "data-provenance",
     "description": "Position data source labels match the three-tier hierarchy from PRD",
     "steps": [
-      "View AI-extracted position \u2014 verify labeled as source type + original link",
-      "View candidate self-reported position \u2014 verify labeled 'Candidate Self-Report'",
-      "View missing position \u2014 verify labeled 'No public position found'",
+      "View AI-extracted position — verify labeled as source type + original link",
+      "View candidate self-reported position — verify labeled 'Candidate Self-Report'",
+      "View missing position — verify labeled 'No public position found'",
       "Verify all three tiers are visually distinct in the UI"
     ],
     "passes": true
@@ -1921,7 +1921,7 @@
       "Verify satisfaction prompt or feedback mechanism appears",
       "Submit satisfaction rating (1-5 scale)",
       "Verify rating is stored anonymously",
-      "Verify aggregated satisfaction can be queried (target >4/5 per PRD \u00a79)"
+      "Verify aggregated satisfaction can be queried (target >4/5 per PRD §9)"
     ],
     "passes": true
   },
@@ -1933,7 +1933,7 @@
       "Query unique voter sessions per district",
       "Compare against estimated eligible voters in district",
       "Verify coverage = (unique sessions / eligible voters) * 100",
-      "Verify target is >1% per PRD \u00a79"
+      "Verify target is >1% per PRD §9"
     ],
     "passes": true
   },

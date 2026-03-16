@@ -21,7 +21,7 @@ Usage:
   npx tsx scripts/run-pipeline.ts --candidate <candidateId> Run pipeline for a single candidate
 
 Required environment:
-  ANTHROPIC_API_KEY   Claude API key for collector and analyzer
+  GEMINI_API_KEY      Gemini API key for collector and analyzer
   DATABASE_URL        PostgreSQL connection string
 `);
     process.exit(0);

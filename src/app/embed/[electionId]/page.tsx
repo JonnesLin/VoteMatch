@@ -73,23 +73,17 @@ function EmbedQuizPageInner() {
   const [results, setResults] = useState<MatchResult[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [domainBlocked, setDomainBlocked] = useState(false);
-
-  // Domain whitelist check
-  useEffect(() => {
-    if (allowedDomain && typeof window !== "undefined") {
-      const parentOrigin = document.referrer
-        ? new URL(document.referrer).hostname
-        : window.location.hostname;
-      if (
-        parentOrigin !== allowedDomain &&
-        parentOrigin !== "localhost" &&
-        parentOrigin !== window.location.hostname
-      ) {
-        setDomainBlocked(true);
-      }
-    }
-  }, [allowedDomain]);
+  const [domainBlocked] = useState(() => {
+    if (typeof window === "undefined" || !allowedDomain) return false;
+    const parentOrigin = document.referrer
+      ? new URL(document.referrer).hostname
+      : window.location.hostname;
+    return (
+      parentOrigin !== allowedDomain &&
+      parentOrigin !== "localhost" &&
+      parentOrigin !== window.location.hostname
+    );
+  });
 
   useEffect(() => {
     fetch(`/api/elections/${electionId}/questions`)

@@ -23,6 +23,8 @@ type Candidate = {
 export default function QuizPage() {
   const { t } = useT();
   const [zip, setZip] = useState("");
+  const [address, setAddress] = useState("");
+  const [useAddress, setUseAddress] = useState(false);
   const [zipError, setZipError] = useState("");
   const [elections, setElections] = useState<Election[] | null>(null);
   const [selectedElection, setSelectedElection] = useState<Election | null>(
@@ -37,6 +39,22 @@ export default function QuizPage() {
     setElections(null);
     setSelectedElection(null);
     setCandidates(null);
+
+    // GEO-001: Support address input in addition to zip code
+    if (useAddress) {
+      if (!address.trim()) {
+        setZipError(t("district.addressError"));
+        return;
+      }
+      setLoading(true);
+      const res = await fetch(
+        `/api/elections?address=${encodeURIComponent(address)}`
+      );
+      const data: Election[] = await res.json();
+      setElections(data);
+      setLoading(false);
+      return;
+    }
 
     if (!/^\d{5}$/.test(zip)) {
       setZipError(t("district.zipError"));
@@ -78,18 +96,44 @@ export default function QuizPage() {
           {t("district.subtitle")}
         </p>
 
-        {/* Step 1: Zip Code */}
+        {/* Step 1: Zip Code or Address (GEO-001) */}
         <form onSubmit={handleZipSubmit} className="mb-8">
+          <div className="mb-2 flex gap-4 text-sm">
+            <button
+              type="button"
+              onClick={() => setUseAddress(false)}
+              className={`pb-1 ${!useAddress ? "border-b-2 border-zinc-900 font-medium text-zinc-900 dark:border-zinc-50 dark:text-zinc-50" : "text-zinc-500 dark:text-zinc-400"}`}
+            >
+              {t("district.zipTab")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setUseAddress(true)}
+              className={`pb-1 ${useAddress ? "border-b-2 border-zinc-900 font-medium text-zinc-900 dark:border-zinc-50 dark:text-zinc-50" : "text-zinc-500 dark:text-zinc-400"}`}
+            >
+              {t("district.addressTab")}
+            </button>
+          </div>
           <div className="flex gap-3">
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={5}
-              value={zip}
-              onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))}
-              placeholder={t("district.zipPlaceholder")}
-              className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
-            />
+            {useAddress ? (
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder={t("district.addressPlaceholder")}
+                className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
+              />
+            ) : (
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={5}
+                value={zip}
+                onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))}
+                placeholder={t("district.zipPlaceholder")}
+                className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
+              />
+            )}
             <button
               type="submit"
               disabled={loading}

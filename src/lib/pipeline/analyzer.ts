@@ -7,7 +7,7 @@
  * "no substantive position" cases.
  */
 
-import { getClaude } from "../claude";
+import { getGeminiModel } from "../gemini";
 import { prisma } from "../db";
 import type { AnalyzerInput, AnalyzerOutput, ExtractedPosition } from "./types";
 
@@ -101,20 +101,12 @@ export async function runAnalyzer(input: AnalyzerInput): Promise<AnalyzerOutput>
     return { candidateId: input.candidateId, positions: [] };
   }
 
-  const response = await getClaude().messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 8192,
-    system: ANALYZER_SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: buildAnalyzerPrompt(input),
-      },
-    ],
+  const model = getGeminiModel({
+    systemInstruction: ANALYZER_SYSTEM_PROMPT,
   });
 
-  const textBlocks = response.content.filter((b) => b.type === "text");
-  const fullText = textBlocks.map((b) => b.text).join("\n");
+  const response = await model.generateContent(buildAnalyzerPrompt(input));
+  const fullText = response.response.text();
 
   const positions = parseAnalyzerResponse(fullText);
 

@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { ANSWER_SCORES, type AnswerOption } from "@/types/answers";
 import { calculateMatch } from "@/lib/match-engine";
+import { getCachedResults, cacheResults } from "@/lib/cache";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
+
+  // CACHE-002: Check Redis cache for shareable result URLs
+  const cached = await getCachedResults(sessionId);
+  if (cached) {
+    return NextResponse.json(cached);
+  }
 
   const session = await prisma.userSession.findUnique({
     where: { id: sessionId },
@@ -144,11 +151,16 @@ export async function GET(
     })
     .sort((a, b) => b.matchPercentage - a.matchPercentage);
 
-  return NextResponse.json({
+  const responseData = {
     sessionId: session.id,
     electionId: session.electionId,
     electionName: session.election.name,
     createdAt: session.createdAt,
     candidates: results,
-  });
+  };
+
+  // CACHE-002: Store in Redis for shareable URLs
+  await cacheResults(sessionId, responseData);
+
+  return NextResponse.json(responseData);
 }

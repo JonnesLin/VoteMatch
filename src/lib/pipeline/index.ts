@@ -11,4 +11,10 @@ export {
   generateQuestions,
   generateQuestionsForElection,
 } from "./question-generator";
+export {
+  acquireCandidates,
+  fetchFromFEC,
+  fetchFromSearchSources,
+  deduplicateCandidates,
+} from "./candidate-acquisition";
 export type * from "./types";
