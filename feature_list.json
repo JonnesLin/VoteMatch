@@ -537,7 +537,7 @@
   {
     "id": "NAV-001",
     "category": "navigation",
-    "description": "Full user flow works end-to-end: landing → district → quiz → results",
+    "description": "Full user flow works end-to-end: landing \u2192 district \u2192 quiz \u2192 results",
     "steps": [
       "Start at landing page",
       "Click Get Started",
@@ -574,7 +574,7 @@
   {
     "id": "PRIVACY-001",
     "category": "privacy",
-    "description": "User sessions are anonymous — no PII stored",
+    "description": "User sessions are anonymous \u2014 no PII stored",
     "steps": [
       "Complete a quiz",
       "Check user_sessions table",
@@ -588,7 +588,7 @@
     "category": "privacy",
     "description": "No user registration required for core voter flow",
     "steps": [
-      "Navigate through entire flow: landing → district → quiz → results",
+      "Navigate through entire flow: landing \u2192 district \u2192 quiz \u2192 results",
       "Verify no login/signup prompt appears",
       "Verify no authentication headers required in API calls"
     ],
@@ -608,7 +608,7 @@
   {
     "id": "PERF-002",
     "category": "performance",
-    "description": "Match calculation completes within 500ms for 15 questions × 5 candidates",
+    "description": "Match calculation completes within 500ms for 15 questions \u00d7 5 candidates",
     "steps": [
       "Set up 5 candidates with 15 issue positions each",
       "Submit 15 answers via /api/match",
@@ -1006,7 +1006,7 @@
   {
     "id": "DP-030",
     "category": "pipeline-orchestration",
-    "description": "End-to-end pipeline runs: candidate → collector → verification → analyzer → positions",
+    "description": "End-to-end pipeline runs: candidate \u2192 collector \u2192 verification \u2192 analyzer \u2192 positions",
     "steps": [
       "Provide a candidate name, office, and district",
       "Run full pipeline",
@@ -1019,7 +1019,7 @@
   {
     "id": "DP-031",
     "category": "pipeline-orchestration",
-    "description": "Pipeline is idempotent — re-running does not create duplicates",
+    "description": "Pipeline is idempotent \u2014 re-running does not create duplicates",
     "steps": [
       "Run pipeline for a candidate",
       "Run pipeline again for the same candidate",
@@ -1255,7 +1255,7 @@
   {
     "id": "CP-005",
     "category": "candidate-auth",
-    "description": "Candidate portal routes are protected — require authentication",
+    "description": "Candidate portal routes are protected \u2014 require authentication",
     "steps": [
       "Navigate to /candidate/dashboard without auth",
       "Verify redirect to login page",
@@ -1405,7 +1405,7 @@
     "description": "GET /api/candidates/me/insights returns anonymized voter data",
     "steps": [
       "Authenticate as claimed candidate",
-      "Ensure ≥50 user sessions exist for the election",
+      "Ensure \u226550 user sessions exist for the election",
       "Send GET to /api/candidates/me/insights",
       "Verify 200 status with aggregated data",
       "Verify no individual user data is identifiable"
@@ -1521,7 +1521,7 @@
       "Verify deployment succeeds",
       "Verify landing page loads on production URL"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "INFRA-002",
@@ -1533,7 +1533,7 @@
       "Verify all tables are created",
       "Verify seed data can be loaded"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "INFRA-003",
@@ -1545,7 +1545,7 @@
       "Verify cache read/write operations work",
       "Verify question sets and match results can be cached"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "INFRA-004",
@@ -1558,7 +1558,7 @@
       "Verify .env is gitignored and not deployed",
       "Verify app functions correctly with production env vars"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "INFRA-005",
@@ -1582,7 +1582,7 @@
       "Verify pipeline runs successfully on trigger",
       "Verify pipeline results are stored in production database"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "INFRA-007",
@@ -1594,12 +1594,12 @@
       "Verify deployment triggers on CI success",
       "Verify failed CI blocks deployment"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SEC-001",
     "category": "security",
-    "description": "Candidate insights API returns only aggregated data — no individual sessions",
+    "description": "Candidate insights API returns only aggregated data \u2014 no individual sessions",
     "steps": [
       "Request insights for an election with 100+ sessions",
       "Verify response contains aggregate metrics only",
@@ -1659,14 +1659,14 @@
   {
     "id": "SEC-006",
     "category": "security",
-    "description": "HTTPS enforced in production — HTTP redirects to HTTPS",
+    "description": "HTTPS enforced in production \u2014 HTTP redirects to HTTPS",
     "steps": [
       "Access production site via HTTP",
       "Verify redirect to HTTPS",
       "Verify all API endpoints require HTTPS",
       "Verify no mixed content warnings"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MON-001",
@@ -1676,7 +1676,7 @@
       "Complete several quizzes (some partial, some full)",
       "Query completion rate metric",
       "Verify rate = (completed sessions / total sessions) * 100",
-      "Verify target is >70% per PRD §9"
+      "Verify target is >70% per PRD \u00a79"
     ],
     "passes": true
   },
@@ -1687,7 +1687,7 @@
     "steps": [
       "Run pipeline for a candidate",
       "View raw materials and extracted positions",
-      "Verify audit trail from source_url → raw_text → position_summary",
+      "Verify audit trail from source_url \u2192 raw_text \u2192 position_summary",
       "Verify quality can be spot-checked by human reviewer"
     ],
     "passes": true
@@ -1711,7 +1711,7 @@
     "steps": [
       "Query coverage for a target election",
       "Verify coverage = (candidates with positions / total candidates) * 100",
-      "Verify target is 100% for target district per PRD §9"
+      "Verify target is 100% for target district per PRD \u00a79"
     ],
     "passes": true
   },
@@ -1868,8 +1868,8 @@
     "description": "Admin can approve or reject candidate profile claims",
     "steps": [
       "View pending claim requests in admin interface",
-      "Approve a claim — verify candidate.claimed = true",
-      "Reject a claim — verify candidate.claimed remains false",
+      "Approve a claim \u2014 verify candidate.claimed = true",
+      "Reject a claim \u2014 verify candidate.claimed remains false",
       "Verify claimant is notified of decision"
     ],
     "passes": true
@@ -1880,7 +1880,7 @@
     "description": "Pre-election full scrape cycle runs for all candidates in target election",
     "steps": [
       "Configure target election for full scrape",
-      "Run full scrape — collector + verification + analyzer for ALL candidates",
+      "Run full scrape \u2014 collector + verification + analyzer for ALL candidates",
       "Verify all candidates have fresh RawMaterial and CandidatePosition records",
       "Verify existing stale data is updated, not duplicated",
       "Verify full scrape is distinct from incremental updates"
@@ -1894,7 +1894,7 @@
     "steps": [
       "View a candidate position in results page",
       "Verify source attribution links to original source_url",
-      "Trace backward: position → supporting_evidence → raw_material → source_url",
+      "Trace backward: position \u2192 supporting_evidence \u2192 raw_material \u2192 source_url",
       "Verify every link in the chain is intact and verifiable",
       "Verify access_date shows when data was collected"
     ],
@@ -1905,9 +1905,9 @@
     "category": "data-provenance",
     "description": "Position data source labels match the three-tier hierarchy from PRD",
     "steps": [
-      "View AI-extracted position — verify labeled as source type + original link",
-      "View candidate self-reported position — verify labeled 'Candidate Self-Report'",
-      "View missing position — verify labeled 'No public position found'",
+      "View AI-extracted position \u2014 verify labeled as source type + original link",
+      "View candidate self-reported position \u2014 verify labeled 'Candidate Self-Report'",
+      "View missing position \u2014 verify labeled 'No public position found'",
       "Verify all three tiers are visually distinct in the UI"
     ],
     "passes": true
@@ -1921,7 +1921,7 @@
       "Verify satisfaction prompt or feedback mechanism appears",
       "Submit satisfaction rating (1-5 scale)",
       "Verify rating is stored anonymously",
-      "Verify aggregated satisfaction can be queried (target >4/5 per PRD §9)"
+      "Verify aggregated satisfaction can be queried (target >4/5 per PRD \u00a79)"
     ],
     "passes": true
   },
@@ -1933,7 +1933,7 @@
       "Query unique voter sessions per district",
       "Compare against estimated eligible voters in district",
       "Verify coverage = (unique sessions / eligible voters) * 100",
-      "Verify target is >1% per PRD §9"
+      "Verify target is >1% per PRD \u00a79"
     ],
     "passes": true
   },
