@@ -56,7 +56,7 @@ The VoteMatch system consists of three core modules: Data Pipeline (backend data
 | 后端 API | Node.js (Next.js API Routes) 或 Python (FastAPI) | MVP 阶段用 Next.js API Routes 减少复杂度 / Use Next.js API Routes in MVP to reduce complexity |
 | 数据库 / Database | PostgreSQL | 结构化数据为主，关系型数据库足够 / Primarily structured data; relational DB is sufficient |
 | 缓存 / Cache | Redis | 缓存预生成的问题集和匹配结果 / Cache pre-generated question sets and match results |
-| LLM 集成 / LLM Integration | Anthropic Claude API (或其他具备联网搜索能力的 LLM) | 搜集员需要联网能力；分析员需要强推理能力 / Collector needs web access; Analyzer needs strong reasoning |
+| LLM 集成 / LLM Integration | Google Gemini API (具备 Google Search grounding 联网能力) | 搜集员需要联网能力；分析员需要强推理能力 / Collector needs web access; Analyzer needs strong reasoning |
 | 部署 / Deployment | Vercel (前端) + Railway/Fly.io (后端服务) | 低成本快速部署 / Low-cost rapid deployment |
 | 定时任务 / Scheduler | GitHub Actions 或 Cron job | 触发数据管线定期运行 / Trigger periodic pipeline runs |
 | 身份验证 / Auth | NextAuth.js | 仅候选人端需要，选民端无需登录 / Only for candidate portal; voters don't need to log in |
