@@ -360,7 +360,7 @@
       "Verify at least one question is displayed",
       "Verify question text is visible and readable"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-021",
@@ -371,7 +371,7 @@
       "Verify 6 options are shown: Strongly Agree, Agree, Neutral, Disagree, Strongly Disagree, Not Interested",
       "Verify options are clearly labeled"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-022",
@@ -383,7 +383,7 @@
       "Click a different option for the same question",
       "Verify the first is deselected and the new one is selected"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-023",
@@ -397,7 +397,7 @@
       "Click to collapse",
       "Verify background text is hidden"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-024",
@@ -409,7 +409,7 @@
       "Answer a question and advance",
       "Verify progress indicator updates"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-025",
@@ -421,7 +421,7 @@
       "Verify POST request is sent to /api/match",
       "Verify request contains election_id and answers array"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-026",
@@ -432,7 +432,7 @@
       "Click submit",
       "Verify unanswered questions are either prompted or treated as not_interested"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-027",

@@ -1,3 +1,43 @@
+## Session 2026-03-15 — Coding Agent (Session 8)
+
+### What was done
+- Built quiz questions page at `/quiz/[electionId]` (src/app/quiz/[electionId]/page.tsx):
+  - UI-020 ✅: Displays questions one at a time with issue tag and question text
+  - UI-021 ✅: 6 answer options (Strongly Agree → Not Interested)
+  - UI-022 ✅: Single-select toggle — clicking new answer deselects previous
+  - UI-023 ✅: Expandable background section with chevron toggle
+  - UI-024 ✅: Progress bar + "Question X of Y" + "N answered" counter
+  - UI-025 ✅: "See Results" button on last question POSTs to /api/match
+  - UI-026 ✅: Partial completion — unanswered questions default to not_interested
+- Inline results view (bridge until results page exists):
+  - Shows ranked candidates with name, party, match %, progress bars
+  - Neutral wording: "policy positions are closest to yours"
+  - "Retake Quiz" button resets state
+- All verified via Playwright browser automation against live dev server (port 3001)
+- npm run build passes with zero errors
+
+### Features verified this session
+- UI-020: Quiz page at /quiz/[electionId] displays 12 questions one at a time
+- UI-021: All 6 answer options present and labeled
+- UI-022: Answer selection toggles correctly (Strongly Agree → Agree switch)
+- UI-023: Background expands/collapses with explanation text
+- UI-024: Progress shows "Question 1 of 12", updates on navigation
+- UI-025: Submit sends POST /api/match, results display with 4 ranked candidates
+- UI-026: 3/12 answered → results calculated on answered issues only
+
+### Known issues
+- Dev server on port 3001 (port 3000 occupied)
+- Results page (/results/[sessionId]) does not exist yet — results shown inline on quiz page
+- No dedicated results page means UI-030 through UI-036 features still need separate page
+
+### Next priority
+- UI-030: Results page at /results/[sessionId] with issue-by-issue comparison
+- UI-002: Verify "Get Started" on landing → /quiz navigation
+- UI-027: Mobile responsive quiz page
+- Commit accumulated changes
+
+---
+
 ## Session 2026-03-15 — Coding Agent (Session 7)
 
 ### What was done
