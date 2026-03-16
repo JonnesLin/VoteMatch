@@ -81,6 +81,9 @@ export async function GET(
           score: number | null;
           confidence: string | null;
           source: string | null;
+          aiOriginalSummary: string | null;
+          aiOriginalScore: number | null;
+          aiOriginalConfidence: string | null;
         }
       > = {};
 
@@ -93,6 +96,9 @@ export async function GET(
           score: p.positionScore,
           confidence: p.confidence,
           source: p.source,
+          aiOriginalSummary: p.aiOriginalSummary,
+          aiOriginalScore: p.aiOriginalScore,
+          aiOriginalConfidence: p.aiOriginalConfidence,
         };
       }
 

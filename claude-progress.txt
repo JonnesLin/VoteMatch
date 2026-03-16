@@ -1,3 +1,80 @@
+## Session 2026-03-16 — Coding Agent (Session 13)
+
+### What was done
+Committed sessions 10-12 accumulated work (38 files, 4842 insertions). Then implemented 8 remaining features:
+
+**CP-003: Email verification**
+- Added `emailVerified` + `verificationToken` fields to User model
+- Created POST /api/auth/verify-email endpoint
+- Register now returns verificationToken; claim blocked until verified
+
+**CP-010: Claim Your Profile page**
+- Added "Claim Your Profile" link on results page
+- Created /candidate/claim page with register/login + verify + claim flow
+
+**CP-021: Candidate dashboard**
+- Created /candidate/dashboard page with login, position list
+- Positions show source labels (AI Extracted / Self-Reported) and confidence
+- Edit inline with score selection and notes
+
+**CP-024: Contradicting positions shown to voters**
+- Added `aiOriginalSummary`, `aiOriginalScore`, `aiOriginalConfidence` to CandidatePosition schema
+- PUT /api/candidates/me/positions preserves original AI data when overwriting
+- Session results API returns both positions; results UI shows amber box with AI original
+
+**CP-025: Position changes trigger regeneration**
+- After PUT /api/candidates/me/positions, calculates new divergence
+- Compares current QuestionSet issues to new top issues
+- If changed, triggers full LLM regeneration (graceful degradation without API key)
+
+**B2B-001 + B2B-002: Embeddable quiz widget**
+- Created /embed/[electionId] page — minimal chrome, inline styles, no i18n dependency
+- GET /api/embed returns embed code snippets with customization params
+- Supports theme (light/dark), primaryColor, hideFooter, domain whitelisting
+- Middleware allows iframe embedding for /embed/* routes (Content-Security-Policy: frame-ancestors *)
+- Client-side domain check blocks unauthorized embeds
+
+**MON-003: Accuracy monitoring**
+- Created scripts/accuracy-check.ts — compares pipeline positions to ground truth JSON
+- Reports exact matches, close matches (±1.0), missing, mismatches
+- Outputs machine-readable accuracy-report.json
+- Added `npm run accuracy` script
+
+**Schema changes**
+- User: added email_verified (bool), verification_token (string?)
+- CandidatePosition: added ai_original_summary, ai_original_score, ai_original_confidence
+- Ran prisma generate + db push
+
+### Features verified this session (8 features flipped to passing)
+CP-003, CP-010, CP-021, CP-024, CP-025, MON-003, B2B-001, B2B-002
+
+### Feature list status: 115/164 passing (70.1%)
+
+### Remaining: 49 features
+- Pipeline (22): DP-001~006, DP-010~012, DP-020~027, DP-030~034 — needs ANTHROPIC_API_KEY
+- Question Gen (6): QG-003~008 — needs ANTHROPIC_API_KEY
+- Result Explanation (3): RE-001~003 — needs ANTHROPIC_API_KEY
+- LLM Translation (1): I18N-002 — needs ANTHROPIC_API_KEY
+- LLM Analytics Report (1): CA-002 — needs ANTHROPIC_API_KEY
+- Candidate List Acquisition (4): CLA-001~004 — needs external election data APIs
+- Geocoding (2): GEO-001~002 — needs geocoding API
+- Caching (2): CACHE-001~002 — needs Redis
+- Deployment (7): INFRA-001~007 — needs Vercel/Railway setup
+- SEC-006: HTTPS (deployment concern)
+
+### Known issues
+- No ANTHROPIC_API_KEY — 33 features need it to verify
+- No Redis — 2 caching features need it
+- No deployment — 7+1 features need live environment
+- All remaining features require external dependencies (API keys, services, infrastructure)
+
+### Next priority
+1. Set ANTHROPIC_API_KEY and run pipeline end-to-end (unlocks 33 features)
+2. Set up Redis for caching (CACHE-001~002)
+3. Deployment to Vercel (INFRA-*)
+
+---
+
 ## Session 2026-03-15 — Coding Agent (Session 12)
 
 ### What was done

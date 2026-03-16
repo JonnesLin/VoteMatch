@@ -74,17 +74,20 @@ model RawMaterial {
 }
 
 model CandidatePosition {
-  id                 String   @id @default(uuid())
-  candidateId        String   @map("candidate_id")
-  issueId            String   @map("issue_id")
-  positionSummary    String?  @map("position_summary")
-  positionScore      Float?   @map("position_score") // -2.0 to +2.0
-  confidence         String?  // high | medium | low
-  source             String?  // ai_extracted | candidate_self_report
-  supportingEvidence Json?    @map("supporting_evidence") // [{raw_material_id, relevant_quote}]
-  notes              String?
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(uuid())
+  candidateId           String   @map("candidate_id")
+  issueId               String   @map("issue_id")
+  positionSummary       String?  @map("position_summary")
+  positionScore         Float?   @map("position_score") // -2.0 to +2.0
+  confidence            String?  // high | medium | low
+  source                String?  // ai_extracted | candidate_self_report
+  supportingEvidence    Json?    @map("supporting_evidence") // [{raw_material_id, relevant_quote}]
+  notes                 String?
+  aiOriginalSummary     String?  @map("ai_original_summary") // preserved when candidate overwrites AI position
+  aiOriginalScore       Float?   @map("ai_original_score")
+  aiOriginalConfidence  String?  @map("ai_original_confidence")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
 
   candidate Candidate     @relation(fields: [candidateId], references: [id])
   issue     IssueCategory @relation(fields: [issueId], references: [id])
@@ -146,11 +149,13 @@ model UserAnswer {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         String   @default("candidate")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id                String   @id @default(uuid())
+  email             String   @unique
+  passwordHash      String   @map("password_hash")
+  role              String   @default("candidate")
+  emailVerified     Boolean  @default(false) @map("email_verified")
+  verificationToken String?  @map("verification_token")
+  createdAt         DateTime @default(now()) @map("created_at")
 
   claimedCandidates Candidate[]
 

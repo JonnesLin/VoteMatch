@@ -35,8 +35,9 @@ export async function POST(request: Request) {
   }
 
   const passwordHash = await hashPassword(password);
+  const verificationToken = crypto.randomUUID();
   const user = await prisma.user.create({
-    data: { email, passwordHash, role: "candidate" },
+    data: { email, passwordHash, role: "candidate", verificationToken },
   });
 
   const token = await createToken({
@@ -46,7 +47,11 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json(
-    { token, user: { id: user.id, email: user.email, role: user.role } },
+    {
+      token,
+      user: { id: user.id, email: user.email, role: user.role, emailVerified: false },
+      verificationToken: verificationToken,
+    },
     { status: 201 }
   );
 }

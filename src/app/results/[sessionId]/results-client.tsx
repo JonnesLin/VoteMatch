@@ -9,6 +9,9 @@ type CandidatePosition = {
   score: number | null;
   confidence: string | null;
   source: string | null;
+  aiOriginalSummary?: string | null;
+  aiOriginalScore?: number | null;
+  aiOriginalConfidence?: string | null;
 };
 
 type IssueBreakdownItem = {
@@ -272,6 +275,16 @@ export function ResultsClient({ data }: { data: SessionResult }) {
                                         })}
                                       </p>
                                     )}
+                                    {item.candidatePosition.aiOriginalSummary && (
+                                      <div className="mt-2 rounded border border-amber-200 bg-amber-50 p-2 dark:border-amber-800 dark:bg-amber-950">
+                                        <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                                          {t("source.ai_extracted")}:
+                                        </p>
+                                        <p className="text-xs text-amber-600 dark:text-amber-400">
+                                          {item.candidatePosition.aiOriginalSummary}
+                                        </p>
+                                      </div>
+                                    )}
                                   </>
                                 ) : (
                                   <p className="italic text-zinc-400 dark:text-zinc-500">
@@ -314,6 +327,15 @@ export function ResultsClient({ data }: { data: SessionResult }) {
             className="flex-1 rounded-lg border border-zinc-300 py-3 text-center font-medium text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-800"
           >
             {t("results.tryDifferent")}
+          </Link>
+        </div>
+
+        <div className="mt-4 text-center">
+          <Link
+            href={`/candidate/claim?electionId=${data.electionId}`}
+            className="text-sm text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            {t("candidate.claimProfile")}
           </Link>
         </div>
 

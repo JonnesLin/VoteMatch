@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "seed": "npx tsx prisma/seed.ts",
     "pipeline": "npx tsx scripts/run-pipeline.ts",
-    "admin": "npx tsx scripts/admin-create.ts"
+    "admin": "npx tsx scripts/admin-create.ts",
+    "accuracy": "npx tsx scripts/accuracy-check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

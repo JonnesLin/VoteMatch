@@ -18,6 +18,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Check email verification
+  const user = await prisma.user.findUnique({ where: { id: auth.userId } });
+  if (!user?.emailVerified) {
+    return NextResponse.json(
+      { error: "Email verification required before claiming a profile" },
+      { status: 403 }
+    );
+  }
+
   const body = await request.json().catch(() => null);
   if (!body?.candidate_id) {
     return NextResponse.json(

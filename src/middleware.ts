@@ -23,6 +23,17 @@ function cleanup() {
 }
 
 export function middleware(request: NextRequest) {
+  // Allow iframe embedding for /embed/* routes
+  if (request.nextUrl.pathname.startsWith("/embed/")) {
+    const response = NextResponse.next();
+    response.headers.delete("X-Frame-Options");
+    response.headers.set(
+      "Content-Security-Policy",
+      "frame-ancestors *"
+    );
+    return response;
+  }
+
   // Only rate-limit API routes
   if (!request.nextUrl.pathname.startsWith("/api/")) {
     return NextResponse.next();
@@ -69,5 +80,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: ["/api/:path*", "/embed/:path*"],
 };

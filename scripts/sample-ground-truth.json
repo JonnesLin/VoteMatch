@@ -1,0 +1,11 @@
+[
+  { "candidateName": "Sarah Chen", "issueName": "healthcare", "expectedScore": 1.5 },
+  { "candidateName": "Sarah Chen", "issueName": "education", "expectedScore": 2.0 },
+  { "candidateName": "Sarah Chen", "issueName": "gun_control", "expectedScore": 1.5 },
+  { "candidateName": "David Kim", "issueName": "healthcare", "expectedScore": 1.0 },
+  { "candidateName": "David Kim", "issueName": "education", "expectedScore": 1.5 },
+  { "candidateName": "Maria Rodriguez", "issueName": "healthcare", "expectedScore": -1.5 },
+  { "candidateName": "Maria Rodriguez", "issueName": "gun_control", "expectedScore": -2.0 },
+  { "candidateName": "James Nakamura", "issueName": "healthcare", "expectedScore": 0.5 },
+  { "candidateName": "James Nakamura", "issueName": "environment", "expectedScore": 0.0 }
+]
