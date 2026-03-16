@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useT } from "@/i18n/provider";
 
 type CandidatePosition = {
   summary: string | null;
@@ -37,33 +38,24 @@ export type SessionResult = {
   candidates: MatchCandidate[];
 };
 
-const ANSWER_LABELS: Record<string, string> = {
-  strongly_agree: "Strongly Agree",
-  agree: "Agree",
-  neutral: "Neutral",
-  disagree: "Disagree",
-  strongly_disagree: "Strongly Disagree",
-  not_interested: "Not Interested",
-};
-
-function scoreToLabel(score: number | null): string {
-  if (score === null) return "No position";
-  if (score >= 1.5) return "Strongly Support";
-  if (score >= 0.5) return "Support";
-  if (score > -0.5) return "Neutral";
-  if (score > -1.5) return "Oppose";
-  return "Strongly Oppose";
+function scoreToLabel(
+  score: number | null,
+  t: (key: string) => string
+): string {
+  if (score === null) return t("score.noPosition");
+  if (score >= 1.5) return t("score.stronglySupport");
+  if (score >= 0.5) return t("score.support");
+  if (score > -0.5) return t("score.neutral");
+  if (score > -1.5) return t("score.oppose");
+  return t("score.stronglyOppose");
 }
 
-function sourceLabel(source: string | null): string {
+function sourceLabel(
+  source: string | null,
+  t: (key: string) => string
+): string {
   if (!source) return "";
-  const labels: Record<string, string> = {
-    ai_extracted: "Public Record",
-    candidate_self_report: "Candidate Statement",
-    official_website: "Official Website",
-    voting_record: "Voting Record",
-  };
-  return labels[source] ?? source;
+  return t(`source.${source}`);
 }
 
 function similarityColor(similarity: number): string {
@@ -73,7 +65,70 @@ function similarityColor(similarity: number): string {
   return "bg-red-500";
 }
 
+function FeedbackWidget({
+  sessionId,
+  electionId,
+}: {
+  sessionId: string;
+  electionId: string;
+}) {
+  const { t } = useT();
+  const [rating, setRating] = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  async function submitFeedback(r: number) {
+    setRating(r);
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rating: r,
+          session_id: sessionId,
+          election_id: electionId,
+        }),
+      });
+      setSubmitted(true);
+    } catch {
+      // Silently fail — feedback is best-effort
+    }
+  }
+
+  if (submitted) {
+    return (
+      <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+        {t("feedback.thankYou")}
+      </p>
+    );
+  }
+
+  return (
+    <div className="text-center">
+      <p className="mb-2 text-sm text-zinc-600 dark:text-zinc-400">
+        {t("feedback.prompt")}
+      </p>
+      <div className="flex justify-center gap-2">
+        {[1, 2, 3, 4, 5].map((r) => (
+          <button
+            key={r}
+            onClick={() => submitFeedback(r)}
+            className={`h-10 w-10 rounded-full border text-sm font-medium transition-colors ${
+              rating === r
+                ? "border-blue-500 bg-blue-500 text-white"
+                : "border-zinc-300 text-zinc-600 hover:border-blue-400 hover:bg-blue-50 dark:border-zinc-600 dark:text-zinc-400 dark:hover:border-blue-500 dark:hover:bg-zinc-800"
+            }`}
+            aria-label={`${t("feedback.rate")} ${r}`}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ResultsClient({ data }: { data: SessionResult }) {
+  const { t } = useT();
   const [expandedCandidate, setExpandedCandidate] = useState<string | null>(
     null
   );
@@ -82,13 +137,13 @@ export function ResultsClient({ data }: { data: SessionResult }) {
     <div className="flex min-h-screen items-start justify-center bg-zinc-50 px-4 py-12 dark:bg-black sm:py-16">
       <div className="w-full max-w-2xl">
         <h1 className="mb-1 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Your Results
+          {t("results.title")}
         </h1>
         <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
           {data.electionName}
         </p>
         <p className="mb-8 text-zinc-500 dark:text-zinc-400">
-          Candidates whose policy positions are closest to yours.
+          {t("results.subtitle")}
         </p>
 
         <div className="space-y-4">
@@ -118,7 +173,7 @@ export function ResultsClient({ data }: { data: SessionResult }) {
                       </p>
                     </div>
                     <p className="ml-9 text-sm text-zinc-500 dark:text-zinc-400">
-                      {candidate.party ?? "Independent"}
+                      {candidate.party ?? t("results.independent")}
                     </p>
                   </div>
                   <div className="ml-4 flex items-center gap-3">
@@ -154,7 +209,7 @@ export function ResultsClient({ data }: { data: SessionResult }) {
                   <div className="border-t border-zinc-200 dark:border-zinc-800">
                     <div className="px-5 py-4">
                       <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                        Issue-by-Issue Comparison
+                        {t("results.issueComparison")}
                       </h3>
                       <div className="space-y-3">
                         {candidate.issueBreakdown.map((item) => (
@@ -168,52 +223,59 @@ export function ResultsClient({ data }: { data: SessionResult }) {
                               </span>
                               <span
                                 className={`inline-block h-2 w-2 rounded-full ${similarityColor(item.similarity)}`}
-                                title={`${Math.round(item.similarity * 100)}% match`}
+                                title={t("results.matchPercent", {
+                                  percent: Math.round(item.similarity * 100),
+                                })}
                               />
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
                                 <p className="mb-0.5 text-xs text-zinc-400 dark:text-zinc-500">
-                                  Your Position
+                                  {t("results.yourPosition")}
                                 </p>
                                 <p className="font-medium text-zinc-700 dark:text-zinc-300">
-                                  {ANSWER_LABELS[item.userAnswer] ??
-                                    item.userAnswer}
+                                  {t(`answer.${item.userAnswer}`)}
                                 </p>
                               </div>
 
                               <div>
                                 <p className="mb-0.5 text-xs text-zinc-400 dark:text-zinc-500">
-                                  {candidate.name.split(" ")[0]}&apos;s
-                                  Position
+                                  {t("results.candidatePosition", {
+                                    name: candidate.name.split(" ")[0],
+                                  })}
                                 </p>
                                 {item.candidatePosition ? (
                                   <>
                                     <p className="font-medium text-zinc-700 dark:text-zinc-300">
                                       {item.candidatePosition.summary ??
                                         scoreToLabel(
-                                          item.candidatePosition.score
+                                          item.candidatePosition.score,
+                                          t
                                         )}
                                     </p>
                                     {item.candidatePosition.source && (
                                       <p className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
-                                        Source:{" "}
-                                        {sourceLabel(
-                                          item.candidatePosition.source
-                                        )}
+                                        {t("results.source", {
+                                          source: sourceLabel(
+                                            item.candidatePosition.source,
+                                            t
+                                          ),
+                                        })}
                                       </p>
                                     )}
                                     {item.candidatePosition.confidence && (
                                       <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                                        Confidence:{" "}
-                                        {item.candidatePosition.confidence}
+                                        {t("results.confidence", {
+                                          level:
+                                            item.candidatePosition.confidence,
+                                        })}
                                       </p>
                                     )}
                                   </>
                                 ) : (
                                   <p className="italic text-zinc-400 dark:text-zinc-500">
-                                    No public position found
+                                    {t("results.noPosition")}
                                   </p>
                                 )}
                               </div>
@@ -245,14 +307,21 @@ export function ResultsClient({ data }: { data: SessionResult }) {
             href={`/quiz/${data.electionId}`}
             className="flex-1 rounded-lg border border-zinc-300 py-3 text-center font-medium text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-800"
           >
-            Retake Quiz
+            {t("results.retakeQuiz")}
           </Link>
           <Link
             href="/quiz"
             className="flex-1 rounded-lg border border-zinc-300 py-3 text-center font-medium text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-800"
           >
-            Try Different Election
+            {t("results.tryDifferent")}
           </Link>
+        </div>
+
+        <div className="mt-8 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <FeedbackWidget
+            sessionId={data.sessionId}
+            electionId={data.electionId}
+          />
         </div>
       </div>
     </div>

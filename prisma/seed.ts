@@ -69,8 +69,9 @@ async function main() {
 
   const [chen, rodriguez, nakamura, kim] = candidates;
 
-  // --- Issue Categories (12 state-level issues) ---
-  const issueData = [
+  // --- Issue Categories ---
+  // State level (12 issues — used by the seed election)
+  const stateIssues = [
     { name: "healthcare", level: "state", displayNameEn: "Healthcare", displayNameZh: "医疗保健" },
     { name: "education", level: "state", displayNameEn: "Education", displayNameZh: "教育" },
     { name: "taxation", level: "state", displayNameEn: "Taxation", displayNameZh: "税收" },
@@ -84,6 +85,38 @@ async function main() {
     { name: "drug_policy", level: "state", displayNameEn: "Drug Policy", displayNameZh: "药物政策" },
     { name: "abortion_rights", level: "state", displayNameEn: "Abortion Rights", displayNameZh: "堕胎权" },
   ] as const;
+
+  // Federal level (12 issues — for congressional / presidential races)
+  const federalIssues = [
+    { name: "fed_immigration", level: "federal", displayNameEn: "Immigration", displayNameZh: "移民政策" },
+    { name: "fed_defense", level: "federal", displayNameEn: "National Defense", displayNameZh: "国防" },
+    { name: "fed_foreign_policy", level: "federal", displayNameEn: "Foreign Policy", displayNameZh: "外交政策" },
+    { name: "fed_social_security", level: "federal", displayNameEn: "Social Security", displayNameZh: "社会保障" },
+    { name: "fed_healthcare", level: "federal", displayNameEn: "Healthcare & Medicare", displayNameZh: "医疗与医保" },
+    { name: "fed_economy", level: "federal", displayNameEn: "Economy & Jobs", displayNameZh: "经济与就业" },
+    { name: "fed_climate", level: "federal", displayNameEn: "Climate & Energy", displayNameZh: "气候与能源" },
+    { name: "fed_gun_control", level: "federal", displayNameEn: "Gun Control", displayNameZh: "枪支管控" },
+    { name: "fed_education", level: "federal", displayNameEn: "Education Policy", displayNameZh: "教育政策" },
+    { name: "fed_trade", level: "federal", displayNameEn: "Trade & Tariffs", displayNameZh: "贸易与关税" },
+    { name: "fed_civil_rights", level: "federal", displayNameEn: "Civil Rights", displayNameZh: "公民权利" },
+    { name: "fed_national_debt", level: "federal", displayNameEn: "National Debt", displayNameZh: "国债" },
+  ] as const;
+
+  // Local level (10 issues — for city/county/school board races)
+  const localIssues = [
+    { name: "local_zoning", level: "local", displayNameEn: "Zoning & Land Use", displayNameZh: "分区与土地使用" },
+    { name: "local_schools", level: "local", displayNameEn: "School Districts", displayNameZh: "学区" },
+    { name: "local_transit", level: "local", displayNameEn: "Public Transit", displayNameZh: "公共交通" },
+    { name: "local_public_safety", level: "local", displayNameEn: "Public Safety", displayNameZh: "公共安全" },
+    { name: "local_parks", level: "local", displayNameEn: "Parks & Recreation", displayNameZh: "公园与休闲" },
+    { name: "local_utilities", level: "local", displayNameEn: "Utilities & Water", displayNameZh: "公用事业与水务" },
+    { name: "local_budget", level: "local", displayNameEn: "City Budget & Taxes", displayNameZh: "市政预算与税收" },
+    { name: "local_housing", level: "local", displayNameEn: "Affordable Housing", displayNameZh: "经济适用房" },
+    { name: "local_business", level: "local", displayNameEn: "Small Business", displayNameZh: "小企业" },
+    { name: "local_environment", level: "local", displayNameEn: "Local Environment", displayNameZh: "本地环境" },
+  ] as const;
+
+  const issueData = [...stateIssues, ...federalIssues, ...localIssues];
 
   const issues = await Promise.all(
     issueData.map((d) => prisma.issueCategory.create({ data: d })),

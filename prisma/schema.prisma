@@ -156,3 +156,14 @@ model User {
 
   @@map("users")
 }
+
+model UserFeedback {
+  id         String   @id @default(uuid())
+  sessionId  String?  @map("session_id")
+  electionId String?  @map("election_id")
+  rating     Int      // 1-5 scale
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("user_feedback")
+}

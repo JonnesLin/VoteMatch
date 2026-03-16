@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useT } from "@/i18n/provider";
 
 type Question = {
   id: string;
@@ -21,18 +22,19 @@ type AnswerOption =
   | "strongly_disagree"
   | "not_interested";
 
-const ANSWER_OPTIONS: { value: AnswerOption; label: string }[] = [
-  { value: "strongly_agree", label: "Strongly Agree" },
-  { value: "agree", label: "Agree" },
-  { value: "neutral", label: "Neutral" },
-  { value: "disagree", label: "Disagree" },
-  { value: "strongly_disagree", label: "Strongly Disagree" },
-  { value: "not_interested", label: "Not Interested" },
+const ANSWER_KEYS: AnswerOption[] = [
+  "strongly_agree",
+  "agree",
+  "neutral",
+  "disagree",
+  "strongly_disagree",
+  "not_interested",
 ];
 
 export default function QuizQuestionsPage() {
   const params = useParams<{ electionId: string }>();
   const router = useRouter();
+  const { t } = useT();
   const electionId = params.electionId;
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -47,13 +49,13 @@ export default function QuizQuestionsPage() {
     async function fetchQuestions() {
       const res = await fetch(`/api/elections/${electionId}/questions`);
       if (!res.ok) {
-        setError("Election not found.");
+        setError(t("quiz.electionNotFound"));
         setLoading(false);
         return;
       }
       const data: Question[] = await res.json();
       if (data.length === 0) {
-        setError("No questions available for this election.");
+        setError(t("quiz.noQuestions"));
         setLoading(false);
         return;
       }
@@ -61,7 +63,7 @@ export default function QuizQuestionsPage() {
       setLoading(false);
     }
     fetchQuestions();
-  }, [electionId]);
+  }, [electionId, t]);
 
   function selectAnswer(questionId: string, answer: AnswerOption) {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
@@ -103,8 +105,8 @@ export default function QuizQuestionsPage() {
       clearTimeout(timeout);
       const message =
         e instanceof DOMException && e.name === "AbortError"
-          ? "Request timed out. Please check your connection and try again."
-          : "Network error. Please check your connection and try again.";
+          ? t("quiz.timeout")
+          : t("quiz.networkError");
       setError(message);
       setSubmitting(false);
       return;
@@ -112,7 +114,7 @@ export default function QuizQuestionsPage() {
     clearTimeout(timeout);
 
     if (!res.ok) {
-      setError("Failed to calculate results. Please try again.");
+      setError(t("quiz.submitError"));
       setSubmitting(false);
       return;
     }
@@ -126,7 +128,7 @@ export default function QuizQuestionsPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-        <p className="text-zinc-500 dark:text-zinc-400">Loading questions...</p>
+        <p className="text-zinc-500 dark:text-zinc-400">{t("quiz.loading")}</p>
       </div>
     );
   }
@@ -140,7 +142,7 @@ export default function QuizQuestionsPage() {
             onClick={() => router.push("/quiz")}
             className="rounded-lg bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
-            Back to Elections
+            {t("quiz.backToElections")}
           </button>
         </div>
       </div>
@@ -161,16 +163,22 @@ export default function QuizQuestionsPage() {
         <div className="mb-8">
           <div className="mb-2 flex justify-between text-sm text-zinc-500 dark:text-zinc-400">
             <span>
-              Question {currentIndex + 1} of {questions.length}
+              {t("quiz.questionProgress", {
+                current: currentIndex + 1,
+                total: questions.length,
+              })}
             </span>
-            <span>{answeredCount} answered</span>
+            <span>{t("quiz.answered", { count: answeredCount })}</span>
           </div>
           <div
             role="progressbar"
             aria-valuenow={currentIndex + 1}
             aria-valuemin={1}
             aria-valuemax={questions.length}
-            aria-label={`Question ${currentIndex + 1} of ${questions.length}`}
+            aria-label={t("quiz.questionProgress", {
+              current: currentIndex + 1,
+              total: questions.length,
+            })}
             className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700"
           >
             <div
@@ -197,7 +205,7 @@ export default function QuizQuestionsPage() {
           <button
             onClick={() => setExpandedBg(!expandedBg)}
             aria-expanded={expandedBg}
-            aria-label="Toggle background explanation"
+            aria-label={t("quiz.background")}
             className="flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
           >
             <svg
@@ -213,7 +221,7 @@ export default function QuizQuestionsPage() {
                 d="M9 5l7 7-7 7"
               />
             </svg>
-            Background
+            {t("quiz.background")}
           </button>
           {expandedBg && (
             <p className="mt-2 rounded-lg bg-zinc-100 p-4 text-sm leading-relaxed text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
@@ -225,25 +233,26 @@ export default function QuizQuestionsPage() {
         {/* Answer options */}
         <div
           role="radiogroup"
-          aria-label={`Answer options for: ${question.questionText}`}
+          aria-label={question.questionText}
           className="mb-8 space-y-2"
         >
-          {ANSWER_OPTIONS.map((option) => {
-            const isSelected = currentAnswer === option.value;
+          {ANSWER_KEYS.map((key) => {
+            const label = t(`answer.${key}`);
+            const isSelected = currentAnswer === key;
             return (
               <button
-                key={option.value}
+                key={key}
                 role="radio"
                 aria-checked={isSelected}
-                aria-label={option.label}
-                onClick={() => selectAnswer(question.id, option.value)}
+                aria-label={label}
+                onClick={() => selectAnswer(question.id, key)}
                 className={`w-full rounded-lg border px-4 py-3 text-left font-medium transition-colors ${
                   isSelected
                     ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-50 dark:bg-zinc-50 dark:text-zinc-900"
                     : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500"
                 }`}
               >
-                {option.label}
+                {label}
               </button>
             );
           })}
@@ -256,7 +265,7 @@ export default function QuizQuestionsPage() {
             disabled={currentIndex === 0}
             className="flex-1 rounded-lg border border-zinc-300 py-3 text-center font-medium text-zinc-900 transition-colors hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-800"
           >
-            Previous
+            {t("quiz.previous")}
           </button>
           {isLast ? (
             <button
@@ -264,14 +273,14 @@ export default function QuizQuestionsPage() {
               disabled={submitting}
               className="flex-1 rounded-lg bg-zinc-900 py-3 text-center font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              {submitting ? "Calculating..." : "See Results"}
+              {submitting ? t("quiz.calculating") : t("quiz.seeResults")}
             </button>
           ) : (
             <button
               onClick={goNext}
               className="flex-1 rounded-lg bg-zinc-900 py-3 text-center font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              Next
+              {t("quiz.next")}
             </button>
           )}
         </div>

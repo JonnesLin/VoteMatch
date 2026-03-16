@@ -46,7 +46,7 @@
   },
   {
     "id": "API-001",
-    "category": "api",
+    "category": "api-voter",
     "description": "GET /api/elections returns list of elections",
     "steps": [
       "Send GET request to /api/elections",
@@ -58,7 +58,7 @@
   },
   {
     "id": "API-002",
-    "category": "api",
+    "category": "api-voter",
     "description": "GET /api/elections?zip={zipCode} filters elections by zip code",
     "steps": [
       "Send GET request with valid zip code",
@@ -70,7 +70,7 @@
   },
   {
     "id": "API-003",
-    "category": "api",
+    "category": "api-voter",
     "description": "GET /api/elections/{electionId}/candidates returns candidates for an election",
     "steps": [
       "Send GET request with valid election ID",
@@ -83,7 +83,7 @@
   },
   {
     "id": "API-004",
-    "category": "api",
+    "category": "api-voter",
     "description": "GET /api/elections/{electionId}/questions returns question set",
     "steps": [
       "Send GET request with valid election ID",
@@ -96,7 +96,7 @@
   },
   {
     "id": "API-005",
-    "category": "api",
+    "category": "api-voter",
     "description": "POST /api/match accepts answers and returns match results",
     "steps": [
       "Send POST with election_id and answers array",
@@ -109,7 +109,7 @@
   },
   {
     "id": "API-006",
-    "category": "api",
+    "category": "api-voter",
     "description": "POST /api/match handles 'not_interested' answers correctly",
     "steps": [
       "Send POST with some answers as 'not_interested'",
@@ -120,7 +120,7 @@
   },
   {
     "id": "API-007",
-    "category": "api",
+    "category": "api-voter",
     "description": "POST /api/match creates anonymous user session",
     "steps": [
       "Send POST /api/match with valid data",
@@ -132,7 +132,7 @@
   },
   {
     "id": "API-008",
-    "category": "api",
+    "category": "api-voter",
     "description": "GET /api/candidates/{candidateId}/positions returns detailed positions",
     "steps": [
       "Send GET request with valid candidate ID",
@@ -145,7 +145,7 @@
   },
   {
     "id": "API-009",
-    "category": "api",
+    "category": "api-voter",
     "description": "API returns proper error responses for invalid inputs",
     "steps": [
       "Send POST /api/match with empty body",
@@ -159,7 +159,7 @@
   },
   {
     "id": "API-010",
-    "category": "api",
+    "category": "api-voter",
     "description": "API endpoints handle missing candidate positions gracefully",
     "steps": [
       "Create candidate with no positions",
@@ -537,7 +537,7 @@
   {
     "id": "NAV-001",
     "category": "navigation",
-    "description": "Full user flow works end-to-end: landing \u2192 district \u2192 quiz \u2192 results",
+    "description": "Full user flow works end-to-end: landing → district → quiz → results",
     "steps": [
       "Start at landing page",
       "Click Get Started",
@@ -574,7 +574,7 @@
   {
     "id": "PRIVACY-001",
     "category": "privacy",
-    "description": "User sessions are anonymous \u2014 no PII stored",
+    "description": "User sessions are anonymous — no PII stored",
     "steps": [
       "Complete a quiz",
       "Check user_sessions table",
@@ -588,7 +588,7 @@
     "category": "privacy",
     "description": "No user registration required for core voter flow",
     "steps": [
-      "Navigate through entire flow: landing \u2192 district \u2192 quiz \u2192 results",
+      "Navigate through entire flow: landing → district → quiz → results",
       "Verify no login/signup prompt appears",
       "Verify no authentication headers required in API calls"
     ],
@@ -608,7 +608,7 @@
   {
     "id": "PERF-002",
     "category": "performance",
-    "description": "Match calculation completes within 500ms for 15 questions \u00d7 5 candidates",
+    "description": "Match calculation completes within 500ms for 15 questions × 5 candidates",
     "steps": [
       "Set up 5 candidates with 15 issue positions each",
       "Submit 15 answers via /api/match",
@@ -777,7 +777,7 @@
       "Verify a translation mechanism is in place or planned",
       "Verify language can be switched without code changes"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SEO-001",
@@ -800,5 +800,1168 @@
       "Verify candidate match data is in the HTML (not loaded client-side only)"
     ],
     "passes": true
+  },
+
+  {
+    "id": "DP-001",
+    "category": "pipeline-collector",
+    "description": "Collector LLM prompt searches candidate official campaign website for policy info",
+    "steps": [
+      "Call collector with a candidate name, office, and district",
+      "Verify output includes search results from official campaign website",
+      "Verify output includes /issues, /platform, /about page content if found",
+      "Verify 'not found' is explicitly marked if no official website exists"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-002",
+    "category": "pipeline-collector",
+    "description": "Collector searches voting record databases for incumbent candidates",
+    "steps": [
+      "Call collector with an incumbent candidate",
+      "Verify output includes voting record search results",
+      "Verify source_type is 'voting_record'",
+      "Verify raw_text contains relevant vote descriptions"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-003",
+    "category": "pipeline-collector",
+    "description": "Collector searches local news coverage for candidate policy mentions",
+    "steps": [
+      "Call collector with candidate name and district",
+      "Verify output includes local news search results",
+      "Verify source_type is 'news'",
+      "Verify raw_text contains policy-relevant excerpts"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-004",
+    "category": "pipeline-collector",
+    "description": "Collector searches public social media posts for policy statements",
+    "steps": [
+      "Call collector with candidate name",
+      "Verify output includes social media search results",
+      "Verify source_type is 'social_media'",
+      "Verify only policy-relevant posts are included"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-005",
+    "category": "pipeline-collector",
+    "description": "Collector outputs structured RawMaterial records with required fields",
+    "steps": [
+      "Run collector for a candidate",
+      "Verify each result has source_url, source_type, raw_text, access_date",
+      "Verify no stance judgments are made in raw_text (pure collection)",
+      "Verify results are stored in RawMaterial table"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-006",
+    "category": "pipeline-collector",
+    "description": "Collector explicitly marks 'not found' for source types with no results",
+    "steps": [
+      "Run collector for a candidate with limited public presence",
+      "Verify each source type (official_website, voting_record, news, social_media) is attempted",
+      "Verify source types with no results are marked as 'not found' in output"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-010",
+    "category": "pipeline-verification",
+    "description": "URL verifier checks HTTP status for each source_url",
+    "steps": [
+      "Run URL verification on collected RawMaterial records",
+      "Verify each source_url is visited programmatically",
+      "Verify HTTP 200 responses set url_verified = true",
+      "Verify non-200 responses set url_verified = false"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-011",
+    "category": "pipeline-verification",
+    "description": "URL verifier confirms raw_text exists on the linked page",
+    "steps": [
+      "Run content verification on URL-verified RawMaterial records",
+      "Verify page content is fetched and compared to raw_text",
+      "Verify matching content sets content_verified = true",
+      "Verify non-matching content sets content_verified = false"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-012",
+    "category": "pipeline-verification",
+    "description": "Failed URL verifications are flagged for review or discarded",
+    "steps": [
+      "Create RawMaterial with invalid source_url",
+      "Run verification pipeline",
+      "Verify record is flagged with url_verified = false",
+      "Verify flagged records are excluded from analyzer input"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-020",
+    "category": "pipeline-analyzer",
+    "description": "Analyzer extracts structured positions from verified raw materials",
+    "steps": [
+      "Provide verified RawMaterial records for a candidate",
+      "Run analyzer",
+      "Verify output contains CandidatePosition records",
+      "Verify each position has issue_id, position_summary, position_score"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-021",
+    "category": "pipeline-analyzer",
+    "description": "Analyzer assigns position_score on -2 to +2 scale correctly",
+    "steps": [
+      "Run analyzer on raw materials with clear pro/con stances",
+      "Verify strongly supportive positions get score near +2",
+      "Verify strongly opposing positions get score near -2",
+      "Verify neutral/ambiguous positions get score near 0"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-022",
+    "category": "pipeline-analyzer",
+    "description": "Analyzer assigns confidence levels (high/medium/low) to each position",
+    "steps": [
+      "Run analyzer on raw materials with varying evidence quality",
+      "Verify positions backed by voting records get 'high' confidence",
+      "Verify positions from single news mention get 'medium' or 'low'",
+      "Verify positions with no direct evidence get 'low'"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-023",
+    "category": "pipeline-analyzer",
+    "description": "Analyzer marks low-confidence positions as 'Position unclear'",
+    "steps": [
+      "Run analyzer on ambiguous raw materials",
+      "Verify low-confidence positions have notes containing 'Position unclear'",
+      "Verify these are not force-classified into a strong stance"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-024",
+    "category": "pipeline-analyzer",
+    "description": "Analyzer identifies 'said a lot but no substantive position' cases",
+    "steps": [
+      "Provide raw materials where candidate discusses an issue without taking a stance",
+      "Run analyzer",
+      "Verify output notes indicate no substantive position found",
+      "Verify position is not fabricated from vague language"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-025",
+    "category": "pipeline-analyzer",
+    "description": "Analyzer detects contradictory statements and preserves both",
+    "steps": [
+      "Provide raw materials with contradictory positions on same issue",
+      "Run analyzer",
+      "Verify notes field describes the contradiction",
+      "Verify supporting_evidence includes quotes from both stances"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-026",
+    "category": "pipeline-analyzer",
+    "description": "Analyzer includes supporting_evidence with raw_material_id and relevant_quote",
+    "steps": [
+      "Run analyzer on raw materials",
+      "Verify each CandidatePosition has supporting_evidence array",
+      "Verify each evidence item has raw_material_id referencing source",
+      "Verify relevant_quote contains the actual text supporting the judgment"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-027",
+    "category": "pipeline-analyzer",
+    "description": "Analyzer maps positions to predefined IssueCategory framework",
+    "steps": [
+      "Define issue categories for the election level (state/local/federal)",
+      "Run analyzer",
+      "Verify each position references a valid issue_id from IssueCategory table",
+      "Verify no positions reference non-existent issue categories"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-030",
+    "category": "pipeline-orchestration",
+    "description": "End-to-end pipeline runs: candidate → collector → verification → analyzer → positions",
+    "steps": [
+      "Provide a candidate name, office, and district",
+      "Run full pipeline",
+      "Verify RawMaterial records are created",
+      "Verify URL verification runs on all records",
+      "Verify CandidatePosition records are created from verified materials"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-031",
+    "category": "pipeline-orchestration",
+    "description": "Pipeline is idempotent — re-running does not create duplicates",
+    "steps": [
+      "Run pipeline for a candidate",
+      "Run pipeline again for the same candidate",
+      "Verify no duplicate RawMaterial records",
+      "Verify CandidatePosition records are updated, not duplicated"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-032",
+    "category": "pipeline-orchestration",
+    "description": "Pipeline supports incremental updates at key moments",
+    "steps": [
+      "Run initial pipeline for a candidate",
+      "Simulate new public statement (add new source)",
+      "Run incremental update",
+      "Verify only new sources are collected and analyzed",
+      "Verify existing positions are updated if new evidence changes them"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DP-033",
+    "category": "pipeline-orchestration",
+    "description": "Pipeline runs for all candidates in an election as a batch",
+    "steps": [
+      "Configure pipeline for a target election",
+      "Run batch pipeline",
+      "Verify collector runs for each candidate",
+      "Verify analyzer runs for each candidate",
+      "Verify all candidates have CandidatePosition records"
+    ],
+    "passes": false
+  },
+  {
+    "id": "QG-001",
+    "category": "question-generation",
+    "description": "Question generator calculates divergence score per issue across candidates",
+    "steps": [
+      "Fetch all CandidatePosition data for an election",
+      "Calculate divergence = max(position_scores) - min(position_scores) per issue",
+      "Verify divergence scores are correct for each issue",
+      "Verify issues with identical positions get divergence = 0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "QG-002",
+    "category": "question-generation",
+    "description": "Question generator selects top 8-15 most divergent issues",
+    "steps": [
+      "Calculate divergence scores for all issues",
+      "Verify issues are sorted by divergence descending",
+      "Verify 8-15 issues are selected",
+      "Verify low-divergence issues are excluded"
+    ],
+    "passes": true
+  },
+  {
+    "id": "QG-003",
+    "category": "question-generation",
+    "description": "LLM generates user-facing question for each selected issue",
+    "steps": [
+      "Provide selected issues and candidate position summaries",
+      "Call LLM question generation prompt",
+      "Verify output contains question_text, positive_direction, background per issue",
+      "Verify reading_level_check passes"
+    ],
+    "passes": false
+  },
+  {
+    "id": "QG-004",
+    "category": "question-generation",
+    "description": "Generated questions use everyday language at 6th-grade reading level",
+    "steps": [
+      "Review all generated questions",
+      "Verify no political jargon or technical terms",
+      "Verify short sentences with simple vocabulary",
+      "Verify one concept per question"
+    ],
+    "passes": false
+  },
+  {
+    "id": "QG-005",
+    "category": "question-generation",
+    "description": "Each generated question has a clear positive_direction defined",
+    "steps": [
+      "Review generated question set",
+      "Verify every question has positive_direction field",
+      "Verify positive_direction clearly states what 'agree' means",
+      "Verify score mapping is consistent with positive_direction"
+    ],
+    "passes": false
+  },
+  {
+    "id": "QG-006",
+    "category": "question-generation",
+    "description": "Each generated question has a plain-language background explainer",
+    "steps": [
+      "Review generated question set",
+      "Verify every question has background field with 2-3 sentences",
+      "Verify background uses plain language (no jargon)",
+      "Verify background provides relevant context for the issue"
+    ],
+    "passes": false
+  },
+  {
+    "id": "QG-007",
+    "category": "question-generation",
+    "description": "Generated questions are stored as QuestionSet linked to election",
+    "steps": [
+      "Generate questions for an election",
+      "Verify QuestionSet record created with election_id and generated_at",
+      "Verify Question records created with question_set_id",
+      "Verify questions have display_order assigned"
+    ],
+    "passes": false
+  },
+  {
+    "id": "QG-008",
+    "category": "question-generation",
+    "description": "QuestionSet is regenerated when candidate position data changes",
+    "steps": [
+      "Generate initial QuestionSet for an election",
+      "Update a candidate's position data",
+      "Trigger regeneration",
+      "Verify new QuestionSet is created",
+      "Verify questions reflect updated divergence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "QG-009",
+    "category": "question-generation",
+    "description": "Question count is between 8 and 15",
+    "steps": [
+      "Generate questions for election with many issues (>15)",
+      "Verify no more than 15 questions generated",
+      "Generate questions for election with few divergent issues",
+      "Verify at least 8 questions generated (or max available if <8 issues)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "RE-001",
+    "category": "result-explanation",
+    "description": "LLM generates natural language match explanation per candidate",
+    "steps": [
+      "Complete match calculation",
+      "Call LLM explanation generator with user answers, candidate positions, match scores",
+      "Verify output contains a brief match summary per candidate",
+      "Verify explanation references specific issues where user and candidate agree/disagree"
+    ],
+    "passes": false
+  },
+  {
+    "id": "RE-002",
+    "category": "result-explanation",
+    "description": "Match explanations use neutral, non-directive language",
+    "steps": [
+      "Generate match explanations",
+      "Verify no language suggesting who to vote for",
+      "Verify wording focuses on policy alignment, not endorsement",
+      "Verify tone is informational, not persuasive"
+    ],
+    "passes": false
+  },
+  {
+    "id": "RE-003",
+    "category": "result-explanation",
+    "description": "Match explanations can be pre-generated and cached",
+    "steps": [
+      "Pre-generate common explanation templates",
+      "Verify cached explanations are used when available",
+      "Verify cache invalidation when positions change",
+      "Verify fallback to live LLM generation when cache miss"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CP-001",
+    "category": "candidate-auth",
+    "description": "NextAuth.js configured for candidate authentication",
+    "steps": [
+      "Verify NextAuth.js is installed and configured",
+      "Verify auth API routes exist at /api/auth/*",
+      "Verify session provider wraps candidate portal pages",
+      "Verify JWT or session-based auth is functional"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-002",
+    "category": "candidate-auth",
+    "description": "Candidate registration with email and password",
+    "steps": [
+      "Navigate to candidate registration page",
+      "Enter email and password",
+      "Submit registration form",
+      "Verify user record created in users table with role='candidate'",
+      "Verify password is hashed (not stored in plaintext)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-003",
+    "category": "candidate-auth",
+    "description": "Email verification required before profile claim",
+    "steps": [
+      "Register a new candidate account",
+      "Verify email verification is sent",
+      "Attempt to claim profile without verifying email",
+      "Verify claim is rejected",
+      "Verify email, then retry claim",
+      "Verify claim proceeds"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CP-004",
+    "category": "candidate-auth",
+    "description": "Candidate login and logout flow works correctly",
+    "steps": [
+      "Navigate to candidate login page",
+      "Enter valid credentials",
+      "Verify redirect to candidate dashboard",
+      "Click logout",
+      "Verify redirect to login page",
+      "Verify protected routes are inaccessible after logout"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-005",
+    "category": "candidate-auth",
+    "description": "Candidate portal routes are protected — require authentication",
+    "steps": [
+      "Navigate to /candidate/dashboard without auth",
+      "Verify redirect to login page",
+      "Navigate to /api/candidates/me/positions without auth",
+      "Verify 401 response"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-010",
+    "category": "candidate-claim",
+    "description": "Claim Your Profile page accessible from candidate results view",
+    "steps": [
+      "View results page showing a candidate",
+      "Verify 'Claim Your Profile' link is visible for unclaimed candidates",
+      "Click the link",
+      "Verify navigation to claim flow page"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CP-011",
+    "category": "candidate-claim",
+    "description": "POST /api/candidates/claim endpoint accepts claim request",
+    "steps": [
+      "Send POST with candidate_id and verification_info",
+      "Verify 200 status for valid request",
+      "Verify claim record is created",
+      "Verify 400 for missing fields",
+      "Verify 404 for invalid candidate_id"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-012",
+    "category": "candidate-claim",
+    "description": "Claims enter manual review queue in MVP",
+    "steps": [
+      "Submit a profile claim",
+      "Verify claim status is 'pending_review'",
+      "Verify candidate.claimed remains false until approved",
+      "Verify admin can approve/reject claims"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-013",
+    "category": "candidate-claim",
+    "description": "Approved claim marks candidate as claimed and links to user",
+    "steps": [
+      "Submit and approve a profile claim",
+      "Verify candidate.claimed = true",
+      "Verify candidate.claimed_by = user.id",
+      "Verify candidate dashboard shows claimed profile"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-014",
+    "category": "candidate-claim",
+    "description": "Already-claimed candidates cannot be claimed by another user",
+    "steps": [
+      "Claim and approve a candidate profile",
+      "Attempt to claim same candidate with different user",
+      "Verify claim is rejected with appropriate message"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-020",
+    "category": "candidate-positions",
+    "description": "GET /api/candidates/me/positions returns own position data",
+    "steps": [
+      "Authenticate as a candidate who has claimed a profile",
+      "Send GET to /api/candidates/me/positions",
+      "Verify 200 status with positions array",
+      "Verify positions include both ai_extracted and candidate_self_report entries"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-021",
+    "category": "candidate-positions",
+    "description": "Candidate dashboard displays own positions with source labels",
+    "steps": [
+      "Log in as claimed candidate",
+      "Navigate to candidate dashboard",
+      "Verify all positions are listed with issue name",
+      "Verify each position shows source (AI Extracted / Self-Report)",
+      "Verify confidence level is displayed"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CP-022",
+    "category": "candidate-positions",
+    "description": "PUT /api/candidates/me/positions/{positionId} updates a position",
+    "steps": [
+      "Authenticate as claimed candidate",
+      "Send PUT with updated position_summary and position_score",
+      "Verify 200 status",
+      "Verify position is updated in database",
+      "Verify source is set to 'candidate_self_report'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-023",
+    "category": "candidate-positions",
+    "description": "Candidate can add new position for uncovered issue",
+    "steps": [
+      "Authenticate as claimed candidate with missing positions on some issues",
+      "Add position for an uncovered issue",
+      "Verify new CandidatePosition record created",
+      "Verify source is 'candidate_self_report'",
+      "Verify position appears in results for that candidate"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-024",
+    "category": "candidate-positions",
+    "description": "Self-report contradicting AI-extracted shows both positions to voters",
+    "steps": [
+      "Have candidate self-report a position that contradicts AI-extracted position",
+      "View results as a voter",
+      "Verify both positions are displayed for that issue",
+      "Verify labels clearly distinguish 'Public Record' from 'Candidate Self-Report'"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CP-025",
+    "category": "candidate-positions",
+    "description": "Position changes by candidate trigger question set regeneration",
+    "steps": [
+      "Candidate updates a position",
+      "Verify divergence scores are recalculated",
+      "Verify QuestionSet is regenerated if divergence changes significantly",
+      "Verify updated questions reflect new position landscape"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CP-030",
+    "category": "candidate-insights",
+    "description": "GET /api/candidates/me/insights returns anonymized voter data",
+    "steps": [
+      "Authenticate as claimed candidate",
+      "Ensure ≥50 user sessions exist for the election",
+      "Send GET to /api/candidates/me/insights",
+      "Verify 200 status with aggregated data",
+      "Verify no individual user data is identifiable"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-031",
+    "category": "candidate-insights",
+    "description": "Insights require minimum 50 user sessions for privacy",
+    "steps": [
+      "Authenticate as claimed candidate",
+      "Ensure <50 user sessions exist",
+      "Send GET to /api/candidates/me/insights",
+      "Verify response indicates insufficient data",
+      "Add sessions to reach 50, retry",
+      "Verify data is now returned"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-032",
+    "category": "candidate-insights",
+    "description": "Insights include voter issue priority ranking",
+    "steps": [
+      "Generate insights with sufficient sessions",
+      "Verify response includes issue ranking by voter interest",
+      "Verify ranking reflects which issues voters answered (vs skipped)",
+      "Verify strong stances are weighted higher"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-033",
+    "category": "candidate-insights",
+    "description": "Insights include candidate match analysis vs district voters",
+    "steps": [
+      "Generate insights",
+      "Verify response includes candidate's average match percentage",
+      "Verify breakdown by issue shows where candidate aligns/diverges from voters",
+      "Verify comparison against other candidates"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CP-034",
+    "category": "candidate-insights",
+    "description": "Insights include competitive gap analysis",
+    "steps": [
+      "Generate insights for election with multiple candidates",
+      "Verify response shows which issues competitors outperform on",
+      "Verify data is useful for campaign strategy adjustment",
+      "Verify all data is aggregated and anonymized"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CA-001",
+    "category": "consulting-analytics",
+    "description": "Aggregated data dashboard shows election-level voter analytics",
+    "steps": [
+      "Navigate to consulting dashboard",
+      "Verify dashboard shows total sessions, completion rate, avg match scores",
+      "Verify data is filterable by election",
+      "Verify all displayed data is anonymized"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CA-002",
+    "category": "consulting-analytics",
+    "description": "LLM generates deep analysis report from aggregated voter data",
+    "steps": [
+      "Select an election with sufficient data",
+      "Trigger report generation",
+      "Verify LLM receives only aggregated data (no PII)",
+      "Verify report includes issue priority analysis and strategy recommendations",
+      "Verify report is downloadable"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CA-003",
+    "category": "consulting-analytics",
+    "description": "Consultant workbench supports serving multiple clients",
+    "steps": [
+      "Log in as consultant",
+      "Verify ability to view data for multiple elections",
+      "Verify reports can be generated per candidate",
+      "Verify consultant can add professional notes to reports"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CA-004",
+    "category": "consulting-analytics",
+    "description": "Campaign strategy recommendations generated from voter alignment data",
+    "steps": [
+      "Generate strategy report for a candidate",
+      "Verify recommendations reference specific issues where candidate underperforms",
+      "Verify suggestions are actionable and specific",
+      "Verify no individual voter data is exposed"
+    ],
+    "passes": true
+  },
+  {
+    "id": "INFRA-001",
+    "category": "deployment",
+    "description": "Next.js frontend deploys to Vercel successfully",
+    "steps": [
+      "Configure Vercel project for VoteMatch",
+      "Push code to trigger deployment",
+      "Verify deployment succeeds",
+      "Verify landing page loads on production URL"
+    ],
+    "passes": false
+  },
+  {
+    "id": "INFRA-002",
+    "category": "deployment",
+    "description": "PostgreSQL database provisioned on cloud provider",
+    "steps": [
+      "Provision PostgreSQL on Railway, Supabase, or equivalent",
+      "Run prisma db push against production database",
+      "Verify all tables are created",
+      "Verify seed data can be loaded"
+    ],
+    "passes": false
+  },
+  {
+    "id": "INFRA-003",
+    "category": "deployment",
+    "description": "Redis cache configured for production",
+    "steps": [
+      "Provision Redis on Upstash or equivalent",
+      "Configure REDIS_URL environment variable",
+      "Verify cache read/write operations work",
+      "Verify question sets and match results can be cached"
+    ],
+    "passes": false
+  },
+  {
+    "id": "INFRA-004",
+    "category": "deployment",
+    "description": "Production environment variables configured securely",
+    "steps": [
+      "Set DATABASE_URL in Vercel environment",
+      "Set REDIS_URL in Vercel environment",
+      "Set NEXTAUTH_SECRET for auth",
+      "Verify .env is gitignored and not deployed",
+      "Verify app functions correctly with production env vars"
+    ],
+    "passes": false
+  },
+  {
+    "id": "INFRA-005",
+    "category": "deployment",
+    "description": "Custom domain configured with HTTPS",
+    "steps": [
+      "Configure custom domain in Vercel",
+      "Verify DNS propagation",
+      "Verify HTTPS certificate is provisioned",
+      "Verify site loads on custom domain with HTTPS"
+    ],
+    "passes": false
+  },
+  {
+    "id": "INFRA-006",
+    "category": "deployment",
+    "description": "GitHub Actions or cron job triggers pipeline runs on schedule",
+    "steps": [
+      "Create GitHub Actions workflow for data pipeline",
+      "Configure schedule (pre-election full run, periodic incremental)",
+      "Verify pipeline runs successfully on trigger",
+      "Verify pipeline results are stored in production database"
+    ],
+    "passes": false
+  },
+  {
+    "id": "INFRA-007",
+    "category": "deployment",
+    "description": "Production build and deployment pipeline with CI/CD",
+    "steps": [
+      "Push code to main branch",
+      "Verify CI runs lint, type-check, and tests",
+      "Verify deployment triggers on CI success",
+      "Verify failed CI blocks deployment"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SEC-001",
+    "category": "security",
+    "description": "Candidate insights API returns only aggregated data — no individual sessions",
+    "steps": [
+      "Request insights for an election with 100+ sessions",
+      "Verify response contains aggregate metrics only",
+      "Verify no individual session IDs, answers, or timestamps exposed",
+      "Verify response cannot be reverse-engineered to individual users"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SEC-002",
+    "category": "security",
+    "description": "Minimum 50 user sessions enforced before aggregation is available",
+    "steps": [
+      "Request insights with 49 sessions",
+      "Verify request is rejected with insufficient data message",
+      "Add one more session (total 50)",
+      "Verify insights become available"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SEC-003",
+    "category": "security",
+    "description": "No user PII is sent in any LLM API calls",
+    "steps": [
+      "Audit all LLM API call points in codebase",
+      "Verify no user IP, session ID, or personal data in prompts",
+      "Verify only aggregated or candidate data is sent to LLM",
+      "Verify logging does not capture PII alongside LLM calls"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SEC-004",
+    "category": "security",
+    "description": "Candidate authentication uses secure password hashing",
+    "steps": [
+      "Register a candidate account",
+      "Inspect users table in database",
+      "Verify password_hash is stored (not plaintext password)",
+      "Verify bcrypt or equivalent secure hashing is used"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SEC-005",
+    "category": "security",
+    "description": "API rate limiting prevents abuse on public endpoints",
+    "steps": [
+      "Send 100 rapid requests to /api/elections",
+      "Verify rate limiting kicks in after threshold",
+      "Verify 429 Too Many Requests response",
+      "Verify legitimate requests still work after cooldown"
+    ],
+    "passes": true
+  },
+  {
+    "id": "SEC-006",
+    "category": "security",
+    "description": "HTTPS enforced in production — HTTP redirects to HTTPS",
+    "steps": [
+      "Access production site via HTTP",
+      "Verify redirect to HTTPS",
+      "Verify all API endpoints require HTTPS",
+      "Verify no mixed content warnings"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MON-001",
+    "category": "monitoring",
+    "description": "Quiz completion rate is tracked and reportable",
+    "steps": [
+      "Complete several quizzes (some partial, some full)",
+      "Query completion rate metric",
+      "Verify rate = (completed sessions / total sessions) * 100",
+      "Verify target is >70% per PRD §9"
+    ],
+    "passes": true
+  },
+  {
+    "id": "MON-002",
+    "category": "monitoring",
+    "description": "Pipeline output quality can be manually verified",
+    "steps": [
+      "Run pipeline for a candidate",
+      "View raw materials and extracted positions",
+      "Verify audit trail from source_url → raw_text → position_summary",
+      "Verify quality can be spot-checked by human reviewer"
+    ],
+    "passes": true
+  },
+  {
+    "id": "MON-003",
+    "category": "monitoring",
+    "description": "Data accuracy monitoring compares pipeline output to manual review",
+    "steps": [
+      "Run pipeline for a candidate with known positions",
+      "Compare pipeline-extracted positions to manual ground truth",
+      "Calculate accuracy metric (correct positions / total positions)",
+      "Verify accuracy reporting is available"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MON-004",
+    "category": "monitoring",
+    "description": "Candidate data coverage is tracked per election",
+    "steps": [
+      "Query coverage for a target election",
+      "Verify coverage = (candidates with positions / total candidates) * 100",
+      "Verify target is 100% for target district per PRD §9"
+    ],
+    "passes": true
+  },
+
+  {
+    "id": "CLA-001",
+    "category": "candidate-list-acquisition",
+    "description": "Fetch candidate lists from state election commission APIs/websites",
+    "steps": [
+      "Configure target state election commission data source",
+      "Run candidate list fetcher for a target district",
+      "Verify Election records are created with name, type, district, state, election_date, status",
+      "Verify Candidate records are created with name, party, incumbent, official_website"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CLA-002",
+    "category": "candidate-list-acquisition",
+    "description": "Fetch candidate data from FEC public data for federal elections",
+    "steps": [
+      "Query FEC public data API for a target election",
+      "Verify federal candidate records are imported",
+      "Verify party and incumbent status are populated",
+      "Verify data matches FEC source"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CLA-003",
+    "category": "candidate-list-acquisition",
+    "description": "Fetch candidate data from third-party aggregators (BallotReady, Vote Smart)",
+    "steps": [
+      "Query BallotReady or Vote Smart API for a target district",
+      "Verify candidate records are imported and deduplicated",
+      "Verify data supplements state/FEC sources",
+      "Verify official_website is populated when available"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CLA-004",
+    "category": "candidate-list-acquisition",
+    "description": "Candidate list acquisition deduplicates across multiple data sources",
+    "steps": [
+      "Import candidates from state commission and FEC",
+      "Verify same candidate from different sources is not duplicated",
+      "Verify merged record has the most complete data",
+      "Verify election-candidate relationships are correct"
+    ],
+    "passes": false
+  },
+  {
+    "id": "GEO-001",
+    "category": "geocoding",
+    "description": "District selection supports address input in addition to zip code",
+    "steps": [
+      "Navigate to district selection page",
+      "Verify both address and zip code inputs are available",
+      "Enter a street address",
+      "Verify system resolves address to correct district and elections"
+    ],
+    "passes": false
+  },
+  {
+    "id": "GEO-002",
+    "category": "geocoding",
+    "description": "Geocoding API maps address/zip to legislative district",
+    "steps": [
+      "Send address to geocoding service",
+      "Verify correct legislative district is returned",
+      "Verify works for federal, state, and local districts",
+      "Verify fallback to zip-based lookup when geocoding fails"
+    ],
+    "passes": false
+  },
+  {
+    "id": "I18N-002",
+    "category": "i18n",
+    "description": "LLM dynamic translation for content beyond static UI strings",
+    "steps": [
+      "View a quiz question in non-default language",
+      "Verify question_text, background, and position_summary are translated by LLM",
+      "Verify translation quality is natural and accurate",
+      "Verify translated content is cached to avoid redundant LLM calls"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CACHE-001",
+    "category": "caching",
+    "description": "Redis caches pre-generated question sets to avoid redundant DB queries",
+    "steps": [
+      "Request questions for an election",
+      "Verify questions are fetched from DB and stored in Redis",
+      "Request same questions again",
+      "Verify second request is served from Redis cache, not DB",
+      "Verify cache is invalidated when QuestionSet is regenerated"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CACHE-002",
+    "category": "caching",
+    "description": "Redis caches match results for shareable result URLs",
+    "steps": [
+      "Complete a quiz and generate match results",
+      "Verify results are cached in Redis by session ID",
+      "Access results URL again",
+      "Verify cached results are returned without recalculation",
+      "Verify cache TTL is appropriate"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ISSUE-001",
+    "category": "issue-framework",
+    "description": "Issue framework varies by election level (federal vs state vs local)",
+    "steps": [
+      "Define federal-level issues (immigration, defense, foreign policy)",
+      "Define state-level issues (education, healthcare, taxation)",
+      "Define local-level issues (zoning, school districts, public transit)",
+      "Verify IssueCategory.level field correctly filters issues per election type",
+      "Verify analyzer uses level-appropriate framework"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ISSUE-002",
+    "category": "issue-framework",
+    "description": "Admin can define and manage issue categories per election level",
+    "steps": [
+      "Access admin interface or CLI tool for issue management",
+      "Create new issue category with name, level, display_name_en, display_name_zh",
+      "Edit existing issue category",
+      "Verify changes are reflected in question generation and analyzer"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ADMIN-001",
+    "category": "admin",
+    "description": "Admin can manually create elections and enter candidate data",
+    "steps": [
+      "Access admin interface or CLI",
+      "Create a new Election record with all required fields",
+      "Add Candidate records linked to the election",
+      "Verify data appears in voter-facing API endpoints"
+    ],
+    "passes": true
+  },
+  {
+    "id": "ADMIN-002",
+    "category": "admin",
+    "description": "Admin can approve or reject candidate profile claims",
+    "steps": [
+      "View pending claim requests in admin interface",
+      "Approve a claim — verify candidate.claimed = true",
+      "Reject a claim — verify candidate.claimed remains false",
+      "Verify claimant is notified of decision"
+    ],
+    "passes": true
+  },
+  {
+    "id": "DP-034",
+    "category": "pipeline-orchestration",
+    "description": "Pre-election full scrape cycle runs for all candidates in target election",
+    "steps": [
+      "Configure target election for full scrape",
+      "Run full scrape — collector + verification + analyzer for ALL candidates",
+      "Verify all candidates have fresh RawMaterial and CandidatePosition records",
+      "Verify existing stale data is updated, not duplicated",
+      "Verify full scrape is distinct from incremental updates"
+    ],
+    "passes": false
+  },
+  {
+    "id": "PROV-001",
+    "category": "data-provenance",
+    "description": "Full audit trail from source URL to displayed voter position is traceable",
+    "steps": [
+      "View a candidate position in results page",
+      "Verify source attribution links to original source_url",
+      "Trace backward: position → supporting_evidence → raw_material → source_url",
+      "Verify every link in the chain is intact and verifiable",
+      "Verify access_date shows when data was collected"
+    ],
+    "passes": true
+  },
+  {
+    "id": "PROV-002",
+    "category": "data-provenance",
+    "description": "Position data source labels match the three-tier hierarchy from PRD",
+    "steps": [
+      "View AI-extracted position — verify labeled as source type + original link",
+      "View candidate self-reported position — verify labeled 'Candidate Self-Report'",
+      "View missing position — verify labeled 'No public position found'",
+      "Verify all three tiers are visually distinct in the UI"
+    ],
+    "passes": true
+  },
+  {
+    "id": "MON-005",
+    "category": "monitoring",
+    "description": "User satisfaction feedback collection mechanism exists",
+    "steps": [
+      "Complete quiz and view results",
+      "Verify satisfaction prompt or feedback mechanism appears",
+      "Submit satisfaction rating (1-5 scale)",
+      "Verify rating is stored anonymously",
+      "Verify aggregated satisfaction can be queried (target >4/5 per PRD §9)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "MON-006",
+    "category": "monitoring",
+    "description": "District voter coverage is tracked as percentage of eligible voters",
+    "steps": [
+      "Query unique voter sessions per district",
+      "Compare against estimated eligible voters in district",
+      "Verify coverage = (unique sessions / eligible voters) * 100",
+      "Verify target is >1% per PRD §9"
+    ],
+    "passes": true
+  },
+  {
+    "id": "B2B-001",
+    "category": "b2b-embed",
+    "description": "White-label embeddable quiz widget for media and civic organizations",
+    "steps": [
+      "Generate embed code for a specific election",
+      "Embed widget in a third-party HTML page",
+      "Verify quiz flow works within embedded context",
+      "Verify branding is customizable (white-label)",
+      "Verify results data flows back to VoteMatch analytics"
+    ],
+    "passes": false
+  },
+  {
+    "id": "B2B-002",
+    "category": "b2b-embed",
+    "description": "Embedded widget supports custom styling and domain whitelisting",
+    "steps": [
+      "Configure custom CSS/theme for embedded widget",
+      "Set allowed domains for embed",
+      "Verify widget renders with custom styling",
+      "Verify widget rejects loading from non-whitelisted domains"
+    ],
+    "passes": false
   }
 ]

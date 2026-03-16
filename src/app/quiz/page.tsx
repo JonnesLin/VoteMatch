@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useT } from "@/i18n/provider";
 
 type Election = {
   id: string;
@@ -20,6 +21,7 @@ type Candidate = {
 };
 
 export default function QuizPage() {
+  const { t } = useT();
   const [zip, setZip] = useState("");
   const [zipError, setZipError] = useState("");
   const [elections, setElections] = useState<Election[] | null>(null);
@@ -37,7 +39,7 @@ export default function QuizPage() {
     setCandidates(null);
 
     if (!/^\d{5}$/.test(zip)) {
-      setZipError("Please enter a valid 5-digit zip code.");
+      setZipError(t("district.zipError"));
       return;
     }
 
@@ -70,10 +72,10 @@ export default function QuizPage() {
     <div className="flex min-h-screen items-start justify-center bg-zinc-50 px-4 py-16 dark:bg-black">
       <div className="w-full max-w-xl">
         <h1 className="mb-2 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Find Your Election
+          {t("district.title")}
         </h1>
         <p className="mb-8 text-zinc-500 dark:text-zinc-400">
-          Enter your zip code to see elections in your area.
+          {t("district.subtitle")}
         </p>
 
         {/* Step 1: Zip Code */}
@@ -85,7 +87,7 @@ export default function QuizPage() {
               maxLength={5}
               value={zip}
               onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))}
-              placeholder="e.g. 53703"
+              placeholder={t("district.zipPlaceholder")}
               className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400"
             />
             <button
@@ -93,7 +95,9 @@ export default function QuizPage() {
               disabled={loading}
               className="rounded-lg bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              {loading && !selectedElection ? "Searching..." : "Search"}
+              {loading && !selectedElection
+                ? t("district.searching")
+                : t("district.search")}
             </button>
           </div>
           {zipError && (
@@ -107,11 +111,7 @@ export default function QuizPage() {
         {elections !== null && elections.length === 0 && (
           <div className="rounded-lg border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900">
             <p className="text-zinc-600 dark:text-zinc-400">
-              No elections found for zip code{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                {zip}
-              </span>
-              . Try a different zip code.
+              {t("district.noElections", { zip })}
             </p>
           </div>
         )}
@@ -119,7 +119,7 @@ export default function QuizPage() {
         {elections !== null && elections.length > 0 && (
           <div className="mb-8">
             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              Elections in your area
+              {t("district.electionsTitle")}
             </h2>
             <div className="space-y-3">
               {elections.map((election) => {
@@ -155,14 +155,14 @@ export default function QuizPage() {
         {/* Step 3: Candidates */}
         {loading && selectedElection && (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Loading candidates...
+            {t("district.loadingCandidates")}
           </p>
         )}
 
         {candidates !== null && candidates.length > 0 && selectedElection && (
           <div>
             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-              Candidates
+              {t("district.candidatesTitle")}
             </h2>
             <div className="mb-6 space-y-3">
               {candidates.map((candidate) => (
@@ -175,8 +175,9 @@ export default function QuizPage() {
                       {candidate.name}
                     </p>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      {candidate.party ?? "Independent"}
-                      {candidate.incumbent && " · Incumbent"}
+                      {candidate.party ?? t("district.independent")}
+                      {candidate.incumbent &&
+                        ` · ${t("district.incumbent")}`}
                     </p>
                   </div>
                 </div>
@@ -186,7 +187,7 @@ export default function QuizPage() {
               href={`/quiz/${selectedElection.id}`}
               className="inline-block w-full rounded-lg bg-zinc-900 py-3 text-center font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              Start Quiz
+              {t("district.startQuiz")}
             </a>
           </div>
         )}
