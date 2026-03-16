@@ -138,7 +138,7 @@
       "Run: npx tsx scripts/scrape-ballotpedia.ts Wisconsin",
       "Verify output shows candidates found and upserted"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "SCRIPT-002",
@@ -199,7 +199,7 @@
       "curl http://localhost:3000/api/elections?zip=53703",
       "Verify JSON array with Wisconsin elections"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "E2E-002",
@@ -209,7 +209,7 @@
       "curl http://localhost:3000/api/elections?zip=98004",
       "Verify empty array (before scraping Washington)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "E2E-003",
@@ -219,7 +219,7 @@
       "Run npm run scrape",
       "Verify all 50 states + DC complete"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "REGRESSION-001",
