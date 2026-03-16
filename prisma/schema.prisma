@@ -9,17 +9,20 @@ datasource db {
 
 model Election {
   id           String      @id @default(uuid())
-  name         String      // e.g. "2026 Wisconsin State Assembly"
-  type         String      // federal | state | city | local
+  name         String      // e.g. "2026 Wisconsin General Election — State Assembly District 42"
+  type         String      // federal | state | local
   district     String
   state        String?
   electionDate DateTime    @map("election_date")
   status       String      @default("upcoming") // upcoming | active | completed
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at")
 
   candidates   Candidate[]
   questionSets QuestionSet[]
   userSessions UserSession[]
 
+  @@unique([district, electionDate])
   @@map("elections")
 }
 
@@ -40,6 +43,7 @@ model Candidate {
   rawMaterials    RawMaterial[]
   positions       CandidatePosition[]
 
+  @@unique([electionId, name])
   @@map("candidates")
 }
 
@@ -77,6 +81,7 @@ model CandidatePosition {
   candidateId           String   @map("candidate_id")
   issueId               String   @map("issue_id")
   positionSummary       String?  @map("position_summary")
+  positionSummaryZh     String?  @map("position_summary_zh")
   positionScore         Float?   @map("position_score") // -2.0 to +2.0
   confidence            String?  // high | medium | low
   source                String?  // ai_extracted | candidate_self_report
@@ -111,8 +116,10 @@ model Question {
   questionSetId     String @map("question_set_id")
   issueId           String @map("issue_id")
   questionText      String @map("question_text")
+  questionTextZh    String @default("") @map("question_text_zh")
   positiveDirection String @map("positive_direction")
   background        String?
+  backgroundZh      String? @map("background_zh")
   displayOrder      Int    @map("display_order")
 
   questionSet QuestionSet  @relation(fields: [questionSetId], references: [id])

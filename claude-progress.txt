@@ -1,3 +1,109 @@
+## Session 2026-03-16 — Coding Agent (Session 17: Google Civic API Integration)
+
+### What was done
+Implemented all 6 phases of Google Civic API integration in a single session.
+
+**Phase 1: Schema Changes (CIVIC-SCHEMA-001 to 005)**
+- Added `createdAt DateTime @default(now())` to Election model
+- Added `updatedAt DateTime @default(now()) @updatedAt` to Election model
+- Added `@@unique([district, electionDate])` constraint to Election
+- Added `@@unique([electionId, name])` constraint to Candidate
+- Ran `prisma db push` successfully
+
+**Phase 2: Civic API Client (CIVIC-CLIENT-001 to 006)**
+- Created `src/lib/civic-api.ts` with:
+  - `CivicContest`, `CivicCandidate`, `CivicElectionResult` interfaces
+  - `lookupElections(address)` — queries voterInfoQuery with `returnAllAvailableData=true`
+  - `scopeToElectionType(scope)` — maps 14 district.scope values to federal/state/local
+  - 15s timeout via `AbortSignal.timeout(15_000)`
+  - Off-season handling: HTTP 400 with `electionNotFound` reason → empty contests (not throw)
+
+**Phase 3: Elections Route (CIVIC-ROUTE-001 to 012)**
+- Rewrote `src/app/api/elections/route.ts`:
+  - Removed Census Geocoder imports and ZIP_TO_DISTRICT constant
+  - Both `?address=` and `?zip=` trigger Civic API lookup
+  - Each contest upserted as Election row, each candidate upserted as Candidate row
+  - Election name: `"{election.name} — {contest.office}"`
+  - Off-season: falls back to DB elections for resolved state
+  - Error: returns 422 with descriptive message
+
+**Phase 4: Env + Deprecation (CIVIC-ENV-001, CIVIC-DEP-001, 002)**
+- Added GOOGLE_CIVIC_API_KEY to .env.example with instructions
+- Added @deprecated JSDoc to geocoding.ts (file preserved for test imports)
+
+**Phase 5: Unit Tests (CIVIC-TEST-001 to 004)**
+- Created `src/lib/civic-api.test.ts` with 12 tests:
+  - scopeToElectionType: federal, state, local, unknown/missing mappings
+  - lookupElections: correct endpoint/params, federal/state/local contests, off-season empty, HTTP errors
+- Total: 36 tests passing (24 existing + 12 new)
+
+**Phase 6: Verification**
+- npm run build: zero errors
+- npm run lint: zero errors
+- npm run test: 36/36 pass
+- GET /api/elections (no filter): returns seed election with createdAt/updatedAt ✅
+- GET /api/elections?zip=53703 (no API key): returns 422 with helpful error ✅
+
+### Feature list status: 28/34 passing (82.4%)
+
+### Remaining: 6 features (all need GOOGLE_CIVIC_API_KEY)
+| Feature | What's needed |
+|---------|---------------|
+| CIVIC-ROUTE-002 | Live API test: address → upserted elections |
+| CIVIC-ROUTE-003 | Live API test: zip → Civic API lookup |
+| CIVIC-UPSERT-001 | Live API test: idempotent election upsert |
+| CIVIC-UPSERT-002 | Live API test: idempotent candidate upsert |
+| CIVIC-COMPAT-001 | Browser test: quiz page with Civic API data |
+| CIVIC-COMPAT-002 | Browser test: district names in UI |
+
+### Next steps
+1. Set GOOGLE_CIVIC_API_KEY in .env and re-test
+2. Verify upsert idempotency with real API calls
+3. Browser-test the quiz flow end-to-end
+
+---
+
+## Session 2026-03-16 — Initializer (Google Civic API Integration)
+
+### Initiative
+Replace Census Geocoder + static ZIP_TO_DISTRICT with Google Civic Information API.
+Spec: docs/superpowers/specs/2026-03-16-google-civic-api-design.md
+
+### Feature list
+civic_api_features.json — 34 features, 0/34 passing
+
+### Files to change (from spec)
+| File | Action | Description |
+|------|--------|-------------|
+| src/lib/civic-api.ts | Create | Google Civic API client |
+| src/app/api/elections/route.ts | Modify | Replace Census Geocoder with Civic API + upsert logic |
+| prisma/schema.prisma | Modify | Add createdAt/updatedAt to Election, unique constraints |
+| .env.example | Modify | Add GOOGLE_CIVIC_API_KEY |
+| src/lib/geocoding.ts | Modify | Add @deprecated JSDoc (do NOT delete) |
+
+### Build order (recommended session sequence)
+1. **Schema changes** (CIVIC-SCHEMA-*): Add timestamps + unique constraints, run migration
+2. **Civic API client** (CIVIC-CLIENT-*): Create src/lib/civic-api.ts with types + lookupElections
+3. **Elections route** (CIVIC-ROUTE-*): Rewrite route to use Civic API, upsert logic, scope mapping
+4. **Env + deprecation** (CIVIC-ENV-*, CIVIC-DEP-*): Update .env.example, deprecate geocoding.ts
+5. **Tests** (CIVIC-TEST-*): Unit tests for civic-api.ts, build + regression check
+6. **Compatibility verification** (CIVIC-COMPAT-*, CIVIC-UPSERT-*): End-to-end UI test, idempotency
+
+### Key implementation details
+- API endpoint: https://www.googleapis.com/civicinfo/v2/voterInfoQuery
+- MUST pass returnAllAvailableData=true (critical for bare zip codes)
+- Scope-to-type mapping: national/congressional→federal, statewide/stateUpper/stateLower→state, everything else→local
+- Election name format: "{election.name} — {contest.office}"
+- Off-season: return DB data when Civic API returns empty contests
+- Upsert keys: Election(district, electionDate), Candidate(electionId, name)
+
+### Previous harness context
+- Main feature_list.json: 163/164 passing (99.4%) — do NOT modify
+- This initiative adds civic_api_features.json as a parallel feature list
+- Existing tests (24+) must continue passing after all changes
+
+---
+
 ## Session 2026-03-16 — Coding Agent (Session 16)
 
 ### What was done

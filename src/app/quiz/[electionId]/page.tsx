@@ -8,9 +8,12 @@ type Question = {
   id: string;
   issueId: string;
   issueName: string;
+  issueNameZh: string;
   questionText: string;
+  questionTextZh: string;
   positiveDirection: string;
   background: string;
+  backgroundZh: string | null;
   displayOrder: number;
 };
 
@@ -34,7 +37,7 @@ const ANSWER_KEYS: AnswerOption[] = [
 export default function QuizQuestionsPage() {
   const params = useParams<{ electionId: string }>();
   const router = useRouter();
-  const { t } = useT();
+  const { locale, t } = useT();
   const electionId = params.electionId;
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -192,12 +195,12 @@ export default function QuizQuestionsPage() {
 
         {/* Issue tag */}
         <span className="mb-3 inline-block rounded-full bg-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-          {question.issueName}
+          {locale === "zh" ? question.issueNameZh : question.issueName}
         </span>
 
         {/* Question text */}
         <h2 className="mb-4 text-xl font-semibold leading-relaxed text-zinc-900 dark:text-zinc-50">
-          {question.questionText}
+          {locale === "zh" ? question.questionTextZh : question.questionText}
         </h2>
 
         {/* Background (expandable) */}
@@ -225,7 +228,7 @@ export default function QuizQuestionsPage() {
           </button>
           {expandedBg && (
             <p className="mt-2 rounded-lg bg-zinc-100 p-4 text-sm leading-relaxed text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-              {question.background}
+              {locale === "zh" ? (question.backgroundZh ?? question.background) : question.background}
             </p>
           )}
         </div>

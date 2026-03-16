@@ -72,6 +72,7 @@ async function getSessionData(
         string,
         {
           summary: string | null;
+          summaryZh: string | null;
           score: number | null;
           confidence: string | null;
           source: string | null;
@@ -84,6 +85,7 @@ async function getSessionData(
         }
         positionDetails[p.issueId] = {
           summary: p.positionSummary,
+          summaryZh: p.positionSummaryZh,
           score: p.positionScore,
           confidence: p.confidence,
           source: p.source,

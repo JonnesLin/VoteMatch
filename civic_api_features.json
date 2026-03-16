@@ -1,0 +1,398 @@
+[
+  {
+    "id": "CIVIC-SCHEMA-001",
+    "category": "schema",
+    "description": "Election model has createdAt DateTime field with @default(now())",
+    "steps": [
+      "Read prisma/schema.prisma",
+      "Verify Election model has 'createdAt DateTime @default(now())'",
+      "Run npx prisma generate without errors"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-SCHEMA-002",
+    "category": "schema",
+    "description": "Election model has updatedAt DateTime field with @updatedAt",
+    "steps": [
+      "Read prisma/schema.prisma",
+      "Verify Election model has 'updatedAt DateTime @updatedAt'",
+      "Run npx prisma generate without errors"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-SCHEMA-003",
+    "category": "schema",
+    "description": "Election model has @@unique([district, electionDate]) constraint",
+    "steps": [
+      "Read prisma/schema.prisma",
+      "Verify Election model has '@@unique([district, electionDate])'",
+      "Attempt to insert two Elections with same district+electionDate",
+      "Verify second insert fails with unique constraint error"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-SCHEMA-004",
+    "category": "schema",
+    "description": "Candidate model has @@unique([electionId, name]) constraint",
+    "steps": [
+      "Read prisma/schema.prisma",
+      "Verify Candidate model has '@@unique([electionId, name])'",
+      "Attempt to insert two Candidates with same electionId+name",
+      "Verify second insert fails with unique constraint error"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-SCHEMA-005",
+    "category": "schema",
+    "description": "Prisma migration for Civic API support runs successfully",
+    "steps": [
+      "Run npx prisma db push",
+      "Verify migration completes without errors",
+      "Verify new columns and constraints exist in database"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-CLIENT-001",
+    "category": "civic-api-client",
+    "description": "src/lib/civic-api.ts exists with CivicContest and CivicElectionResult interfaces",
+    "steps": [
+      "Verify file src/lib/civic-api.ts exists",
+      "Verify CivicContest interface has office, level, district, candidates fields",
+      "Verify CivicElectionResult interface has election, contests, normalizedInput fields",
+      "Verify TypeScript compiles without errors"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-CLIENT-002",
+    "category": "civic-api-client",
+    "description": "lookupElections calls correct Google Civic API endpoint with address and key params",
+    "steps": [
+      "Verify lookupElections is exported from civic-api.ts",
+      "Verify it calls https://www.googleapis.com/civicinfo/v2/voterInfoQuery",
+      "Verify address parameter is passed to the API",
+      "Verify key parameter uses GOOGLE_CIVIC_API_KEY env var"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-CLIENT-003",
+    "category": "civic-api-client",
+    "description": "lookupElections passes returnAllAvailableData=true to API",
+    "steps": [
+      "Read src/lib/civic-api.ts",
+      "Verify returnAllAvailableData=true is included in API request params",
+      "This is critical — without it, bare zip codes cause API errors"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-CLIENT-004",
+    "category": "civic-api-client",
+    "description": "lookupElections has 15-second timeout via AbortSignal.timeout()",
+    "steps": [
+      "Read src/lib/civic-api.ts",
+      "Verify fetch call includes signal: AbortSignal.timeout(15_000)",
+      "Verify timeout value is 15 seconds"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-CLIENT-005",
+    "category": "civic-api-client",
+    "description": "lookupElections throws on HTTP error responses",
+    "steps": [
+      "Read src/lib/civic-api.ts",
+      "Verify function checks response.ok or response.status",
+      "Verify it throws an Error on non-2xx responses",
+      "Unit test with mocked 500 response confirms throw"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-CLIENT-006",
+    "category": "civic-api-client",
+    "description": "lookupElections returns empty contests array (not throw) when no election data",
+    "steps": [
+      "Read src/lib/civic-api.ts",
+      "Verify function handles API response with empty or missing contests",
+      "Verify it returns object with contests: [] instead of throwing",
+      "Unit test with mock empty-contests response confirms empty array"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-001",
+    "category": "elections-route",
+    "description": "Elections route removes Census Geocoder imports and ZIP_TO_DISTRICT constant",
+    "steps": [
+      "Read src/app/api/elections/route.ts",
+      "Verify no import from @/lib/geocoding",
+      "Verify no ZIP_TO_DISTRICT constant defined",
+      "Verify no reference to Census Geocoder or geocodeAddress"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-002",
+    "category": "elections-route",
+    "description": "Address param triggers Civic API lookup and returns upserted elections",
+    "steps": [
+      "Send GET /api/elections?address=123+Main+St+Madison+WI",
+      "Verify response is JSON array of Election objects",
+      "Verify elections were upserted into database",
+      "Verify response includes election name, district, type, electionDate, state"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CIVIC-ROUTE-003",
+    "category": "elections-route",
+    "description": "Zip param triggers Civic API lookup (zip passed as address string)",
+    "steps": [
+      "Send GET /api/elections?zip=53703",
+      "Verify zip is passed to lookupElections as the address string",
+      "Verify response is JSON array of Election objects",
+      "Verify same Civic API codepath is used for both zip and address"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CIVIC-ROUTE-004",
+    "category": "elections-route",
+    "description": "Each Civic API contest is upserted as an Election row",
+    "steps": [
+      "Call GET /api/elections?address=... with a valid address",
+      "Verify prisma.election.upsert is called for each contest",
+      "Verify upsert where-clause uses { district, electionDate }",
+      "Verify election data is persisted in database"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-005",
+    "category": "elections-route",
+    "description": "Each candidate in each contest is upserted as a Candidate row",
+    "steps": [
+      "Call GET /api/elections?address=... with a valid address",
+      "Verify prisma.candidate.upsert is called for each candidate in each contest",
+      "Verify upsert where-clause uses { electionId_name: { electionId, name } }",
+      "Verify candidate name, party, and officialWebsite are stored"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-006",
+    "category": "elections-route",
+    "description": "Election name format: '{election.name} — {contest.office}'",
+    "steps": [
+      "Read src/app/api/elections/route.ts",
+      "Verify election name uses em-dash separator between election name and contest office",
+      "Example output: '2026 Wisconsin General Election — State Assembly District 42'"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-007",
+    "category": "elections-route",
+    "description": "Election.district is set from contest.district.name",
+    "steps": [
+      "Read src/app/api/elections/route.ts",
+      "Verify district field is extracted from contest.district.name",
+      "Example: \"Wisconsin's 42nd State Assembly district\""
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-008",
+    "category": "elections-route",
+    "description": "Scope-to-type mapping correctly maps all 14 district.scope values to Election.type",
+    "steps": [
+      "Read the scope mapping code in elections route or civic-api module",
+      "Verify national → federal",
+      "Verify congressional → federal",
+      "Verify statewide, stateUpper, stateLower → state",
+      "Verify countywide, countyCouncil, citywide, cityCouncil, ward, township, schoolBoard, judicial, special → local",
+      "Verify unknown/missing scope defaults to local"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-009",
+    "category": "elections-route",
+    "description": "Election.state is set from normalizedInput.state (2-letter abbreviation)",
+    "steps": [
+      "Read src/app/api/elections/route.ts",
+      "Verify state is extracted from Civic API response normalizedInput.state",
+      "Verify it stores 2-letter state abbreviation (e.g., 'WI')"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-010",
+    "category": "elections-route",
+    "description": "Off-season: returns existing DB elections when Civic API returns empty contests",
+    "steps": [
+      "Simulate Civic API returning zero contests (off-season scenario)",
+      "Verify route queries existing DB elections for the resolved state",
+      "Verify previously cached and seed data is returned to client",
+      "Verify no error is thrown"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-011",
+    "category": "elections-route",
+    "description": "No-filter request (no zip/address) returns all elections unchanged",
+    "steps": [
+      "Send GET /api/elections with no query params",
+      "Verify response contains all elections in database",
+      "Verify this behavior is identical to before Civic API integration"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ROUTE-012",
+    "category": "elections-route",
+    "description": "Civic API failure returns 422 error to client with meaningful message",
+    "steps": [
+      "Simulate Civic API HTTP error or network timeout",
+      "Verify route returns HTTP 422 status",
+      "Verify response body has { error: '...' } with descriptive message",
+      "Verify no unhandled exception crashes the server"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-ENV-001",
+    "category": "env",
+    "description": ".env.example contains GOOGLE_CIVIC_API_KEY entry with instructions",
+    "steps": [
+      "Read .env.example",
+      "Verify GOOGLE_CIVIC_API_KEY line exists with placeholder value",
+      "Verify comment explains: Google Cloud Console → APIs & Services → Enable Civic API → Create key"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-DEP-001",
+    "category": "deprecation",
+    "description": "geocoding.ts has @deprecated JSDoc comment mentioning Civic API replacement",
+    "steps": [
+      "Read src/lib/geocoding.ts",
+      "Verify @deprecated JSDoc tag is present on module or exported functions",
+      "Verify deprecation message mentions Google Civic Information API as replacement"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-DEP-002",
+    "category": "deprecation",
+    "description": "geocoding.ts still exists (not deleted) to preserve test imports",
+    "steps": [
+      "Verify src/lib/geocoding.ts file exists on disk",
+      "Verify its function bodies are intact",
+      "Verify npm run test still passes (no broken imports)"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-UPSERT-001",
+    "category": "upsert-logic",
+    "description": "Election upsert on (district, electionDate) is idempotent — no duplicates",
+    "steps": [
+      "Call GET /api/elections?address=... twice with same address",
+      "Verify same Election rows returned both times (same IDs)",
+      "Query database directly: no duplicate (district, electionDate) pairs",
+      "Verify updatedAt timestamp is refreshed on second call"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CIVIC-UPSERT-002",
+    "category": "upsert-logic",
+    "description": "Candidate upsert on (electionId, name) is idempotent — no duplicates",
+    "steps": [
+      "Call GET /api/elections?address=... twice with same address",
+      "Verify same Candidate rows exist after both calls (same IDs)",
+      "Query database directly: no duplicate (electionId, name) pairs"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CIVIC-COMPAT-001",
+    "category": "compatibility",
+    "description": "quiz/page.tsx works without code changes — Election[] response shape unchanged",
+    "steps": [
+      "Navigate to /quiz in browser",
+      "Enter a zip code and submit",
+      "Verify elections list is displayed correctly",
+      "Verify election selection shows candidates",
+      "Verify Start Quiz button navigates to quiz page"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CIVIC-COMPAT-002",
+    "category": "compatibility",
+    "description": "Election.district shows full descriptive names from Civic API in the UI",
+    "steps": [
+      "Call GET /api/elections?zip=53703",
+      "Verify district field shows full name like \"Wisconsin's 42nd State Assembly district\"",
+      "Verify this renders correctly in the election list on /quiz page"
+    ],
+    "passes": false
+  },
+  {
+    "id": "CIVIC-TEST-001",
+    "category": "testing",
+    "description": "Unit tests for civic-api.ts cover various contest types (federal, state, local)",
+    "steps": [
+      "Run npm run test",
+      "Verify test file exists for civic-api module",
+      "Verify tests mock fetch with federal, state, and local contest responses",
+      "Verify parsed output matches expected CivicElectionResult structure"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-TEST-002",
+    "category": "testing",
+    "description": "Unit tests for civic-api.ts cover empty results and API errors",
+    "steps": [
+      "Run npm run test",
+      "Verify test for empty contests → returns { contests: [] }",
+      "Verify test for HTTP 500 → throws Error",
+      "Verify test for network timeout → throws Error"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-TEST-003",
+    "category": "testing",
+    "description": "npm run build passes with zero TypeScript and lint errors after all changes",
+    "steps": [
+      "Run npm run build",
+      "Verify exit code 0",
+      "Run npm run lint",
+      "Verify exit code 0"
+    ],
+    "passes": true
+  },
+  {
+    "id": "CIVIC-TEST-004",
+    "category": "testing",
+    "description": "All existing tests (24+) continue to pass — no regressions",
+    "steps": [
+      "Run npm run test",
+      "Verify all pre-existing tests pass",
+      "Verify total test count is >= 24 (existing) + new civic-api tests"
+    ],
+    "passes": true
+  }
+]

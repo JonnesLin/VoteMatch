@@ -1,4 +1,8 @@
 /**
+ * @deprecated Replaced by Google Civic Information API (src/lib/civic-api.ts).
+ * The Census Geocoder cannot resolve bare zip codes to districts.
+ * Kept for backward compatibility with existing tests — do not use in new code.
+ *
  * Geocoding — GEO-001, GEO-002
  *
  * Maps address/zip to legislative districts using the US Census Geocoder API.

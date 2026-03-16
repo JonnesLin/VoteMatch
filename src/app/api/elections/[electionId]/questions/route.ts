@@ -55,8 +55,10 @@ export async function GET(
     issueName: q.issue.displayNameEn,
     issueNameZh: q.issue.displayNameZh,
     questionText: q.questionText,
+    questionTextZh: q.questionTextZh,
     positiveDirection: q.positiveDirection,
     background: q.background,
+    backgroundZh: q.backgroundZh,
     displayOrder: q.displayOrder,
   }));
 

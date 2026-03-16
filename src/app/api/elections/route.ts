@@ -1,78 +1,107 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import {
-  geocodeAddress,
-  buildDistrictIdentifiers,
-} from "@/lib/geocoding";
+  lookupElections,
+  scopeToElectionType,
+} from "@/lib/civic-api";
 
 /**
- * MVP zip-to-district mapping (fast path for known zips).
- * Falls through to Census Geocoder for unknown zips or full addresses.
- */
-const ZIP_TO_DISTRICT: Record<string, string[]> = {
-  // Madison-area zips → WI Assembly District 42
-  "53703": ["WI-Assembly-42"],
-  "53704": ["WI-Assembly-42"],
-  "53705": ["WI-Assembly-42"],
-  "53706": ["WI-Assembly-42"],
-  "53711": ["WI-Assembly-42"],
-  "53713": ["WI-Assembly-42"],
-  "53714": ["WI-Assembly-42"],
-  "53715": ["WI-Assembly-42"],
-  "53716": ["WI-Assembly-42"],
-  "53717": ["WI-Assembly-42"],
-  "53718": ["WI-Assembly-42"],
-  "53719": ["WI-Assembly-42"],
-};
-
-/**
+ * GET /api/elections
  * GET /api/elections?zip=53703
  * GET /api/elections?address=123+Main+St+Madison+WI+53703
  *
- * GEO-001: Supports address input in addition to zip code
- * GEO-002: Geocoding API maps address/zip to legislative district
+ * With zip or address: queries Google Civic Information API, upserts
+ * elections + candidates into DB, returns the upserted rows.
+ * Without params: returns all elections in database.
  */
 export async function GET(request: NextRequest) {
   const zip = request.nextUrl.searchParams.get("zip");
   const address = request.nextUrl.searchParams.get("address");
 
-  // Address-based lookup via Census Geocoder (GEO-001, GEO-002)
-  if (address) {
-    const geoResult = await geocodeAddress(address);
-    const districtIds = buildDistrictIdentifiers(geoResult);
+  const lookupAddress = address ?? zip;
 
-    if (districtIds.length === 0) {
-      return NextResponse.json([]);
+  if (lookupAddress) {
+    let civicResult;
+    try {
+      civicResult = await lookupElections(lookupAddress);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Election lookup failed";
+      return NextResponse.json({ error: message }, { status: 422 });
     }
 
-    const elections = await prisma.election.findMany({
-      where: { district: { in: districtIds } },
-      orderBy: { electionDate: "asc" },
-    });
-    return NextResponse.json(elections);
-  }
+    const resolvedState = civicResult.normalizedInput.state || null;
 
-  if (zip) {
-    // Fast path: static mapping for known zips
-    const districts = ZIP_TO_DISTRICT[zip];
-    if (districts) {
+    // Off-season: no contests from Civic API → return existing DB data
+    if (civicResult.contests.length === 0) {
+      const where = resolvedState ? { state: resolvedState } : {};
       const elections = await prisma.election.findMany({
-        where: { district: { in: districts } },
+        where,
         orderBy: { electionDate: "asc" },
       });
       return NextResponse.json(elections);
     }
 
-    // Slow path: Census Geocoder for unknown zips
-    const geoResult = await geocodeAddress(zip);
-    const districtIds = buildDistrictIdentifiers(geoResult);
+    // Upsert each contest as an Election + its Candidates
+    const electionIds: string[] = [];
 
-    if (districtIds.length === 0) {
-      return NextResponse.json([]);
+    for (const contest of civicResult.contests) {
+      const electionName = `${civicResult.election.name} — ${contest.office}`;
+      const district = contest.district.name;
+      const type = scopeToElectionType(contest.district.scope);
+      const electionDate = new Date(civicResult.election.electionDay);
+
+      const election = await prisma.election.upsert({
+        where: {
+          district_electionDate: {
+            district,
+            electionDate,
+          },
+        },
+        update: {
+          name: electionName,
+          type,
+          state: resolvedState,
+        },
+        create: {
+          name: electionName,
+          type,
+          district,
+          state: resolvedState,
+          electionDate,
+        },
+      });
+
+      electionIds.push(election.id);
+
+      // Upsert candidates for this contest
+      if (contest.candidates) {
+        for (const candidate of contest.candidates) {
+          await prisma.candidate.upsert({
+            where: {
+              electionId_name: {
+                electionId: election.id,
+                name: candidate.name,
+              },
+            },
+            update: {
+              party: candidate.party || null,
+              officialWebsite: candidate.candidateUrl || null,
+            },
+            create: {
+              electionId: election.id,
+              name: candidate.name,
+              party: candidate.party || null,
+              officialWebsite: candidate.candidateUrl || null,
+            },
+          });
+        }
+      }
     }
 
+    // Return the upserted elections
     const elections = await prisma.election.findMany({
-      where: { district: { in: districtIds } },
+      where: { id: { in: electionIds } },
       orderBy: { electionDate: "asc" },
     });
     return NextResponse.json(elections);

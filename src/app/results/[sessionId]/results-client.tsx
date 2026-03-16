@@ -4,11 +4,19 @@ import { useState } from "react";
 import Link from "next/link";
 import { useT } from "@/i18n/provider";
 
+type SupportingEvidenceItem = {
+  relevantQuote: string;
+  sourceUrl: string;
+  sourceType: string;
+};
+
 type CandidatePosition = {
   summary: string | null;
+  summaryZh: string | null;
   score: number | null;
   confidence: string | null;
   source: string | null;
+  supportingEvidence?: SupportingEvidenceItem[] | null;
   aiOriginalSummary?: string | null;
   aiOriginalScore?: number | null;
   aiOriginalConfidence?: string | null;
@@ -131,7 +139,7 @@ function FeedbackWidget({
 }
 
 export function ResultsClient({ data }: { data: SessionResult }) {
-  const { t } = useT();
+  const { locale, t } = useT();
   const [expandedCandidate, setExpandedCandidate] = useState<string | null>(
     null
   );
@@ -222,7 +230,7 @@ export function ResultsClient({ data }: { data: SessionResult }) {
                           >
                             <div className="mb-2 flex items-center justify-between">
                               <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                                {item.issueName}
+                                {locale === "zh" ? item.issueNameZh : item.issueName}
                               </span>
                               <span
                                 className={`inline-block h-2 w-2 rounded-full ${similarityColor(item.similarity)}`}
@@ -251,7 +259,9 @@ export function ResultsClient({ data }: { data: SessionResult }) {
                                 {item.candidatePosition ? (
                                   <>
                                     <p className="font-medium text-zinc-700 dark:text-zinc-300">
-                                      {item.candidatePosition.summary ??
+                                      {(locale === "zh"
+                                        ? item.candidatePosition.summaryZh ?? item.candidatePosition.summary
+                                        : item.candidatePosition.summary) ??
                                         scoreToLabel(
                                           item.candidatePosition.score,
                                           t
@@ -259,12 +269,27 @@ export function ResultsClient({ data }: { data: SessionResult }) {
                                     </p>
                                     {item.candidatePosition.source && (
                                       <p className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
-                                        {t("results.source", {
-                                          source: sourceLabel(
-                                            item.candidatePosition.source,
-                                            t
-                                          ),
-                                        })}
+                                        {t("results.source", { source: "" })}
+                                        {item.candidatePosition.supportingEvidence &&
+                                        item.candidatePosition.supportingEvidence.length > 0 ? (
+                                          item.candidatePosition.supportingEvidence.map(
+                                            (ev, idx) => (
+                                              <span key={idx}>
+                                                {idx > 0 && ", "}
+                                                <a
+                                                  href={ev.sourceUrl}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="text-blue-600 hover:underline dark:text-blue-400"
+                                                >
+                                                  {t(`source.${ev.sourceType}`)}
+                                                </a>
+                                              </span>
+                                            )
+                                          )
+                                        ) : (
+                                          sourceLabel(item.candidatePosition.source, t)
+                                        )}
                                       </p>
                                     )}
                                     {item.candidatePosition.confidence && (

@@ -78,6 +78,28 @@ export async function GET(
     },
   });
 
+  // Collect all rawMaterialIds from supportingEvidence JSON across all candidates
+  const allRawMaterialIds = new Set<string>();
+  for (const candidate of candidates) {
+    for (const p of candidate.positions) {
+      const evidence = p.supportingEvidence as Array<{ rawMaterialId: string }> | null;
+      if (Array.isArray(evidence)) {
+        for (const ev of evidence) {
+          if (ev.rawMaterialId) allRawMaterialIds.add(ev.rawMaterialId);
+        }
+      }
+    }
+  }
+
+  // Batch-fetch RawMaterial records to get actual source URLs
+  const rawMaterials = allRawMaterialIds.size > 0
+    ? await prisma.rawMaterial.findMany({
+        where: { id: { in: [...allRawMaterialIds] } },
+        select: { id: true, sourceUrl: true, sourceType: true },
+      })
+    : [];
+  const rawMaterialMap = new Map(rawMaterials.map((rm) => [rm.id, rm]));
+
   const results = candidates
     .map((candidate) => {
       const candidatePositions: Record<string, number> = {};
@@ -88,6 +110,11 @@ export async function GET(
           score: number | null;
           confidence: string | null;
           source: string | null;
+          supportingEvidence: Array<{
+            relevantQuote: string;
+            sourceUrl: string;
+            sourceType: string;
+          }> | null;
           aiOriginalSummary: string | null;
           aiOriginalScore: number | null;
           aiOriginalConfidence: string | null;
@@ -98,11 +125,32 @@ export async function GET(
         if (p.positionScore !== null) {
           candidatePositions[p.issueId] = p.positionScore;
         }
+
+        // Hydrate supportingEvidence JSON with actual source URLs
+        const rawEvidence = p.supportingEvidence as Array<{
+          rawMaterialId: string;
+          relevantQuote: string;
+        }> | null;
+        const enrichedEvidence = Array.isArray(rawEvidence)
+          ? rawEvidence
+              .map((ev) => {
+                const rm = rawMaterialMap.get(ev.rawMaterialId);
+                if (!rm) return null;
+                return {
+                  relevantQuote: ev.relevantQuote,
+                  sourceUrl: rm.sourceUrl,
+                  sourceType: rm.sourceType,
+                };
+              })
+              .filter((ev): ev is NonNullable<typeof ev> => ev !== null)
+          : null;
+
         positionDetails[p.issueId] = {
           summary: p.positionSummary,
           score: p.positionScore,
           confidence: p.confidence,
           source: p.source,
+          supportingEvidence: enrichedEvidence && enrichedEvidence.length > 0 ? enrichedEvidence : null,
           aiOriginalSummary: p.aiOriginalSummary,
           aiOriginalScore: p.aiOriginalScore,
           aiOriginalConfidence: p.aiOriginalConfidence,

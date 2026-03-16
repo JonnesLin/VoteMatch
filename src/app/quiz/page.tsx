@@ -50,6 +50,12 @@ export default function QuizPage() {
       const res = await fetch(
         `/api/elections?address=${encodeURIComponent(address)}`
       );
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setZipError(body?.error ?? `Request failed (${res.status})`);
+        setLoading(false);
+        return;
+      }
       const data: Election[] = await res.json();
       setElections(data);
       setLoading(false);
@@ -63,6 +69,12 @@ export default function QuizPage() {
 
     setLoading(true);
     const res = await fetch(`/api/elections?zip=${zip}`);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      setZipError(body?.error ?? `Request failed (${res.status})`);
+      setLoading(false);
+      return;
+    }
     const data: Election[] = await res.json();
     setElections(data);
     setLoading(false);
