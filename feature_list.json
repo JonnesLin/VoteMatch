@@ -8,7 +8,7 @@
       "Verify no errors in output",
       "Verify src/generated/prisma/ directory is created"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DB-002",
@@ -19,7 +19,7 @@
       "Verify all tables are created in PostgreSQL",
       "Verify elections, candidates, issue_categories, raw_materials, candidate_positions, question_sets, questions, user_sessions, user_answers, users tables exist"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DB-003",
@@ -32,7 +32,7 @@
       "Verify issue categories are created",
       "Verify candidate positions are populated"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "DB-004",
@@ -55,7 +55,7 @@
       "Verify response is JSON array of election objects",
       "Verify each election has id, name, type, district, electionDate, status"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-002",
@@ -67,7 +67,7 @@
       "Send GET request with nonexistent zip code",
       "Verify empty array is returned"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-003",
@@ -80,7 +80,7 @@
       "Send GET request with invalid election ID",
       "Verify 404 status"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-004",
@@ -93,7 +93,7 @@
       "Verify each question has questionText, positiveDirection, background, displayOrder",
       "Verify questions are sorted by displayOrder"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-005",
@@ -106,7 +106,7 @@
       "Verify matchPercentage is between 0 and 100",
       "Verify response contains issueBreakdown per candidate"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-006",
@@ -117,7 +117,7 @@
       "Verify those issues are excluded from match calculation",
       "Verify matchPercentage is calculated only on answered issues"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-007",
@@ -129,7 +129,7 @@
       "Verify user_answers records are created",
       "Verify no PII is stored in the session"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-008",
@@ -142,7 +142,7 @@
       "Verify each position has positionSummary, positionScore, confidence, source",
       "Verify supporting evidence and source links are included"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-009",
@@ -156,7 +156,7 @@
       "Send POST /api/match with malformed answers",
       "Verify 400 status"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "API-010",
@@ -168,7 +168,7 @@
       "Verify candidate appears in results with 0% or indication of no data",
       "Verify no server error occurs"
     ],
-    "passes": false
+    "passes": true
   },
 
   {
@@ -179,7 +179,7 @@
       "Provide user answers identical to candidate positions",
       "Verify matchPercentage is 100.0"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MATCH-002",
@@ -189,7 +189,7 @@
       "Provide user answers that are exact opposites of candidate positions",
       "Verify matchPercentage is 0.0"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MATCH-003",
@@ -200,7 +200,7 @@
       "Verify the strongly-held issue has more influence on final score",
       "Compare with equal-weight scenario to confirm difference"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MATCH-004",
@@ -211,7 +211,7 @@
       "Calculate match with some issues as not_interested",
       "Verify not_interested issues don't affect the final percentage"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MATCH-005",
@@ -221,7 +221,7 @@
       "Provide all answers as not_interested (empty userAnswers)",
       "Verify matchPercentage returns 0 without error"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MATCH-006",
@@ -232,7 +232,7 @@
       "Verify those issues are skipped",
       "Verify calculation only uses issues both parties have positions on"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MATCH-007",
@@ -243,7 +243,7 @@
       "Verify candidates are ranked by matchPercentage descending",
       "Verify ranking reflects actual position alignment"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MATCH-008",
@@ -254,7 +254,7 @@
       "Verify issueBreakdown array contains entry for each compared issue",
       "Verify each entry has userScore, candidateScore, similarity, weight"
     ],
-    "passes": false
+    "passes": true
   },
 
   {
@@ -267,7 +267,7 @@
       "Verify tagline text is visible",
       "Verify 'Get Started' button is visible"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-002",
@@ -302,7 +302,7 @@
       "Enter a valid zip code",
       "Submit the form"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-011",
@@ -314,7 +314,7 @@
       "Verify each election shows name and date",
       "Verify user can select an election"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-012",
@@ -326,7 +326,7 @@
       "Verify each candidate shows name and party",
       "Verify proceed/continue button appears"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-013",
@@ -337,7 +337,7 @@
       "Verify friendly message is shown (not error)",
       "Verify user can try a different zip code"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "UI-014",
@@ -348,7 +348,7 @@
       "Verify validation error message appears",
       "Verify form does not submit"
     ],
-    "passes": false
+    "passes": true
   },
 
   {
@@ -757,7 +757,7 @@
       "Verify no TypeScript errors",
       "Verify .next build output is generated"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "BUILD-002",

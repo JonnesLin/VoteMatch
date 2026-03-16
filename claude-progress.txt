@@ -1,3 +1,184 @@
+## Session 2026-03-15 — Coding Agent (Session 7)
+
+### What was done
+- Verified BUILD-001 ✅ — `npm run build` passes with zero TypeScript errors
+- Verified UI-001 ✅ — landing page already had heading, tagline, and "Get Started" button
+- Built district selection page at `/quiz` (src/app/quiz/page.tsx):
+  - UI-010 ✅: Zip code input with `inputMode="numeric"`, maxLength=5, non-digit stripping
+  - UI-011 ✅: Elections list appears after zip search, shows name + date + district
+  - UI-012 ✅: Candidates list appears after election selection, shows name + party + incumbent badge
+  - UI-013 ✅: Friendly "No elections found" message for unknown zip, user can retry
+  - UI-014 ✅: 5-digit regex validation, error message shown, form does not submit
+- "Start Quiz" button links to `/quiz/{electionId}` (page not yet created)
+- All verified via Playwright browser automation against live dev server
+
+### Features verified this session
+- BUILD-001: npm run build → exit 0, no TS errors
+- UI-001: Landing page renders VoteMatch heading, tagline, Get Started button
+- UI-010: Zip code input present and functional
+- UI-011: Elections listed after valid zip search (53703 → WI Assembly District 42)
+- UI-012: 4 candidates shown with name, party, incumbent status after election selection
+- UI-013: zip 99999 → "No elections found" message
+- UI-014: Non-5-digit input → "Please enter a valid 5-digit zip code"
+
+### Known issues
+- Dev server on port 3001 (port 3000 occupied)
+- `/quiz/{electionId}` route does not exist yet — "Start Quiz" leads to 404
+- Only 2 git commits despite 7 sessions of work
+
+### Next priority
+- UI-020: Quiz questions page at `/quiz/[electionId]`
+- UI-002: Verify "Get Started" on landing → /quiz navigation works
+- Commit accumulated changes
+
+---
+
+## Session 2026-03-15 — Coding Agent (Session 6)
+
+### What was done
+- Implemented GET /api/candidates/{candidateId}/positions (API-008 ✅)
+  - New route at src/app/api/candidates/[candidateId]/positions/route.ts
+  - Returns positions with joined IssueCategory data (issueName, issueNameZh)
+  - Each position includes: positionSummary, positionScore, confidence, source, supportingEvidence, notes
+  - Sorted alphabetically by issue name
+  - 404 for invalid candidate ID
+  - Verified: Sarah Chen → 12 positions, David Kim → 9 positions (missing 3), bad ID → 404
+- **All 10 API features now passing** (API-001 through API-010)
+
+### Features verified this session
+- API-008: GET /api/candidates/{candidateId}/positions returns correct data
+
+### Known issues
+- Dev server on port 3001 (port 3000 occupied by MeetMyAgent project)
+- Only 2 git commits despite 6 sessions of work — need to commit accumulated changes
+
+### Next priority
+- Start UI layer: UI-001 (landing page), UI-010 (district selection), UI-020 (quiz page)
+- BUILD-001 (npm run build) as a quick verification
+
+---
+
+## Session 2026-03-15 — Coding Agent (Session 5)
+
+### What was done
+- Installed Vitest as test framework
+- Added `test` and `test:watch` npm scripts
+- Wrote 12 unit tests covering MATCH-001 through MATCH-008:
+  - MATCH-001 ✅: identical positions → 100% (2 tests)
+  - MATCH-002 ✅: maximally opposite positions → 0%
+  - MATCH-003 ✅: strong stances weigh more (75% vs 25% scenario, neutral weight = 0.5)
+  - MATCH-004 ✅: omitted (not_interested) issues excluded from calculation
+  - MATCH-005 ✅: empty userAnswers → 0% with empty breakdown
+  - MATCH-006 ✅: missing candidate positions skipped (2 tests)
+  - MATCH-007 ✅: multi-candidate ranking orders correctly
+  - MATCH-008 ✅: breakdown has correct fields and sums to final percentage (2 tests)
+- All 12 tests pass in 4ms
+
+### Features verified this session
+- MATCH-001 through MATCH-008: all 8 match engine features verified via unit tests
+
+### Known issues
+- Dev server on port 3001 (port 3000 occupied by MeetMyAgent project)
+
+### Next priority
+- Implement GET /api/candidates/{candidateId}/positions (API-008)
+- After API layer is complete, begin UI work (UI-001+)
+- Consider BUILD-001 (npm run build) as a quick win
+
+---
+
+## Session 2026-03-15 — Coding Agent (Session 4)
+
+### What was done
+- Implemented POST /api/match (API-005 ✅) — the core matching endpoint
+  - Accepts { election_id, answers: [{question_id, answer}] }
+  - Maps question_id → issueId via Question table, converts answer strings to numeric scores
+  - Runs calculateMatch() per candidate, returns ranked results with issueBreakdown
+  - Creates anonymous UserSession + UserAnswer records (no PII)
+  - Returns 400 for invalid body/answers, 404 for bad election_id
+- Verified multiple edge cases:
+  - API-006 ✅: not_interested answers excluded from calculation
+  - API-007 ✅: anonymous session persisted (only electionId + createdAt, no PII)
+  - API-009 ✅: proper 400/404 error responses for invalid inputs
+  - API-010 ✅: candidates with missing positions handled gracefully (Kim with 9/12 positions)
+
+### Features verified this session
+- API-005: POST /api/match returns ranked candidates with correct matchPercentage and issueBreakdown
+- API-006: not_interested answers excluded, matchPercentage calculated on answered issues only
+- API-007: UserSession + UserAnswer records persisted, no PII stored
+- API-009: empty body → 400, bad election_id → 404, invalid answer → 400
+- API-010: Kim (missing 3 positions) appears in results with fewer issueBreakdown entries, no error
+
+### Known issues
+- Dev server on port 3001 (port 3000 occupied by MeetMyAgent project)
+
+### Next priority
+- Implement MATCH-001 through MATCH-008 unit tests against the match engine
+- Implement GET /api/candidates/{candidateId}/positions (API-008)
+- After API layer is complete, begin UI work (UI-010+)
+
+---
+
+## Session 2026-03-15 — Coding Agent (Session 3)
+
+### What was done
+- Implemented GET /api/elections/{electionId}/questions (API-004 ✅)
+  - Returns latest QuestionSet's questions sorted by displayOrder
+  - Each question includes: id, issueId, issueName, issueNameZh, questionText, positiveDirection, background, displayOrder
+  - Returns 404 for invalid election ID, empty array for election with no question set
+  - Follows same route pattern as candidates endpoint
+
+### Features verified this session
+- API-004: 12 questions returned sorted by displayOrder, 404 for bad ID
+
+### Known issues
+- Dev server on port 3001 (port 3000 occupied by MeetMyAgent project)
+
+### Next priority
+- Implement POST /api/match (API-005) — the core matching endpoint
+- Then API-005 enables testing MATCH-001 through MATCH-008
+- After API layer is solid, move to UI (UI-010+)
+
+---
+
+## Session 2026-03-15 — Coding Agent (Session 2)
+
+### What was done
+- Generated Prisma client successfully (DB-001 ✅)
+- Pushed schema to Prisma Postgres local dev server (DB-002 ✅)
+- Created comprehensive seed script (prisma/seed.ts) with:
+  - 1 election: "2026 Wisconsin State Assembly District 42"
+  - 4 candidates (Chen/D, Rodriguez/R, Nakamura/I, Kim/G)
+  - 12 state-level issue categories with EN/ZH display names
+  - 45 candidate positions (Kim deliberately missing 3 for edge case testing)
+  - 12 pre-generated quiz questions, one per issue
+  - DB-003 ✅, SEED-001 ✅, SEED-002 ✅
+- Implemented GET /api/elections route (src/app/api/elections/route.ts)
+  - Returns all elections when no filter
+  - Filters by zip code via static ZIP_TO_DISTRICT mapping (MVP approach)
+  - Returns empty array for unknown zips
+  - API-001 ✅, API-002 ✅
+- Added tsx devDependency and seed npm script
+- Installed dotenv for seed script env loading
+
+### Features verified this session
+- DB-001, DB-002, DB-003: Prisma generate, db push, seed — all passing
+- API-001: GET /api/elections returns election array with correct fields
+- API-002: GET /api/elections?zip=53703 returns matching election; ?zip=99999 returns []
+
+### Known issues
+- Dev server on port 3001 (port 3000 occupied by MeetMyAgent project)
+- ZIP_TO_DISTRICT is hardcoded static map — sufficient for MVP, needs geocoding API for production
+- Prisma Postgres local dev server must be running (npx prisma dev) before db operations
+
+### Next priority
+- Implement GET /api/elections/{electionId}/candidates (API-003)
+- Implement GET /api/elections/{electionId}/questions (API-004)
+- Implement POST /api/match (API-005)
+- Build quiz page UI (UI-020+)
+
+---
+
 ## Session 2026-03-15 — Initializer Agent
 
 ### What was done
