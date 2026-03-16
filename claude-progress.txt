@@ -1,3 +1,82 @@
+## Session 2026-03-16 — Coding Agent (Session 15)
+
+### What was done
+Pushed all deployment infrastructure to production readiness.
+
+**GitHub Repository**
+- Created public repo: https://github.com/JonnesLin/VoteMatch
+- Pushed all code to main branch
+
+**CI/CD Pipeline (INFRA-006, INFRA-007)**
+- Fixed CI: dummy DATABASE_URL for prisma generate (build-only, no DB connection needed)
+- Added weekly cron schedule (Monday 6AM UTC) for pipeline refresh
+- Gated pipeline job behind PIPELINE_ENABLED repo variable (explicit opt-in)
+- Verified: CI test job passes — lint ✅, build ✅, test (24/24) ✅
+- Pipeline job skips cleanly when secrets not configured (no false failures)
+
+**Deployment Preparation**
+- Created .env.example documenting all production env vars
+- Created scripts/deploy.sh for guided Vercel deployment
+- Installed Vercel CLI globally
+- vercel.json already configured: HSTS, HTTP→HTTPS redirect, embed CSP
+
+**Cleanup**
+- Removed unused src/lib/claude.ts (replaced by Gemini integration)
+- Updated TECH_SPEC to reflect Gemini API usage
+
+### Build status
+- npm run build: zero errors
+- npm run lint: zero errors
+- npm run test: 24/24 pass
+- CI (GitHub Actions): test job passes ✅
+
+### Feature list status: 156/164 passing (95.1%)
+
+### Remaining: 8 features (all need interactive service provisioning)
+Code/config is 100% ready. These require user to run interactive commands:
+
+| Feature | What's needed | Command |
+|---------|---------------|---------|
+| INFRA-001 | Vercel deploy | `vercel login` then `vercel --prod` |
+| INFRA-002 | Cloud PostgreSQL | Provision via Neon/Supabase dashboard |
+| INFRA-003 | Cloud Redis | Provision via Upstash dashboard |
+| INFRA-004 | Env vars | `vercel env add DATABASE_URL production` |
+| INFRA-005 | Custom domain | `vercel domains add your-domain.com` |
+| INFRA-006 | Pipeline verified | Set PIPELINE_ENABLED=true + secrets in GitHub |
+| INFRA-007 | Deployment gate | Connect Vercel GitHub integration |
+| SEC-006 | HTTPS verified | Auto once deployed to Vercel |
+
+### Deployment Quick-Start
+```bash
+# 1. Login to Vercel (opens browser)
+vercel login
+
+# 2. Deploy
+cd /Users/linjinhong/Documents/MoneyProject/VoteMatch
+vercel --prod
+
+# 3. Provision cloud database (e.g. Neon free tier at neon.tech)
+# Copy the DATABASE_URL from Neon dashboard
+
+# 4. Set env vars
+vercel env add DATABASE_URL production
+vercel env add REDIS_URL production
+vercel env add GEMINI_API_KEY production
+vercel env add JWT_SECRET production
+
+# 5. Push schema to production DB
+DATABASE_URL="your-neon-url" npx prisma db push
+
+# 6. Redeploy with env vars
+vercel --prod
+
+# 7. Enable CI pipeline
+# Go to GitHub repo → Settings → Variables → New: PIPELINE_ENABLED = true
+# Go to GitHub repo → Settings → Secrets → New: DATABASE_URL, GEMINI_API_KEY
+```
+
+---
+
 ## Session 2026-03-16 — Coding Agent (Session 14)
 
 ### What was done
