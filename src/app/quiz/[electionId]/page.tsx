@@ -30,25 +30,6 @@ const ANSWER_OPTIONS: { value: AnswerOption; label: string }[] = [
   { value: "not_interested", label: "Not Interested" },
 ];
 
-type MatchCandidate = {
-  candidateId: string;
-  name: string;
-  party: string | null;
-  matchPercentage: number;
-  issueBreakdown: {
-    issueId: string;
-    userScore: number;
-    candidateScore: number;
-    similarity: number;
-    weight: number;
-  }[];
-};
-
-type MatchResult = {
-  sessionId: string;
-  candidates: MatchCandidate[];
-};
-
 export default function QuizQuestionsPage() {
   const params = useParams<{ electionId: string }>();
   const router = useRouter();
@@ -61,7 +42,6 @@ export default function QuizQuestionsPage() {
   const [answers, setAnswers] = useState<Record<string, AnswerOption>>({});
   const [expandedBg, setExpandedBg] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [results, setResults] = useState<MatchResult | null>(null);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -105,14 +85,31 @@ export default function QuizQuestionsPage() {
       answer: answers[q.id] ?? "not_interested",
     }));
 
-    const res = await fetch("/api/match", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        election_id: electionId,
-        answers: answerPayload,
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    let res: Response;
+    try {
+      res = await fetch("/api/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          election_id: electionId,
+          answers: answerPayload,
+        }),
+        signal: controller.signal,
+      });
+    } catch (e) {
+      clearTimeout(timeout);
+      const message =
+        e instanceof DOMException && e.name === "AbortError"
+          ? "Request timed out. Please check your connection and try again."
+          : "Network error. Please check your connection and try again.";
+      setError(message);
+      setSubmitting(false);
+      return;
+    }
+    clearTimeout(timeout);
 
     if (!res.ok) {
       setError("Failed to calculate results. Please try again.");
@@ -120,9 +117,8 @@ export default function QuizQuestionsPage() {
       return;
     }
 
-    const data: MatchResult = await res.json();
-    setResults(data);
-    setSubmitting(false);
+    const data: { sessionId: string } = await res.json();
+    router.push(`/results/${data.sessionId}`);
   }
 
   // --- Loading / Error states ---
@@ -151,61 +147,6 @@ export default function QuizQuestionsPage() {
     );
   }
 
-  // --- Results view (inline until results page exists) ---
-
-  if (results) {
-    return (
-      <div className="flex min-h-screen items-start justify-center bg-zinc-50 px-4 py-16 dark:bg-black">
-        <div className="w-full max-w-xl">
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Your Results
-          </h1>
-          <p className="mb-8 text-zinc-500 dark:text-zinc-400">
-            Candidates whose policy positions are closest to yours.
-          </p>
-          <div className="space-y-4">
-            {results.candidates.map((candidate, i) => (
-              <div
-                key={candidate.candidateId}
-                className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
-              >
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-zinc-900 dark:text-zinc-50">
-                      {i + 1}. {candidate.name}
-                    </p>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      {candidate.party ?? "Independent"}
-                    </p>
-                  </div>
-                  <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-                    {candidate.matchPercentage}%
-                  </span>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-                  <div
-                    className="h-full rounded-full bg-zinc-900 transition-all dark:bg-zinc-50"
-                    style={{ width: `${candidate.matchPercentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => {
-              setResults(null);
-              setAnswers({});
-              setCurrentIndex(0);
-            }}
-            className="mt-8 inline-block w-full rounded-lg border border-zinc-300 py-3 text-center font-medium text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-800"
-          >
-            Retake Quiz
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // --- Quiz view ---
 
   const question = questions[currentIndex];
@@ -224,7 +165,14 @@ export default function QuizQuestionsPage() {
             </span>
             <span>{answeredCount} answered</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+          <div
+            role="progressbar"
+            aria-valuenow={currentIndex + 1}
+            aria-valuemin={1}
+            aria-valuemax={questions.length}
+            aria-label={`Question ${currentIndex + 1} of ${questions.length}`}
+            className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700"
+          >
             <div
               className="h-full rounded-full bg-zinc-900 transition-all dark:bg-zinc-50"
               style={{
@@ -248,6 +196,8 @@ export default function QuizQuestionsPage() {
         <div className="mb-6">
           <button
             onClick={() => setExpandedBg(!expandedBg)}
+            aria-expanded={expandedBg}
+            aria-label="Toggle background explanation"
             className="flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
           >
             <svg
@@ -273,12 +223,19 @@ export default function QuizQuestionsPage() {
         </div>
 
         {/* Answer options */}
-        <div className="mb-8 space-y-2">
+        <div
+          role="radiogroup"
+          aria-label={`Answer options for: ${question.questionText}`}
+          className="mb-8 space-y-2"
+        >
           {ANSWER_OPTIONS.map((option) => {
             const isSelected = currentAnswer === option.value;
             return (
               <button
                 key={option.value}
+                role="radio"
+                aria-checked={isSelected}
+                aria-label={option.label}
                 onClick={() => selectAnswer(question.id, option.value)}
                 className={`w-full rounded-lg border px-4 py-3 text-left font-medium transition-colors ${
                   isSelected

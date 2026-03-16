@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -10,12 +12,12 @@ export default function Home() {
           We&apos;ll show you which candidates are closest to your views.
         </p>
         <div className="flex flex-col gap-4 sm:flex-row">
-          <a
+          <Link
             href="/quiz"
             className="rounded-full bg-zinc-900 px-8 py-3 text-base font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             Get Started
-          </a>
+          </Link>
         </div>
       </main>
     </div>
