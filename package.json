@@ -12,7 +12,8 @@
     "seed": "npx tsx prisma/seed.ts",
     "pipeline": "npx tsx scripts/run-pipeline.ts",
     "admin": "npx tsx scripts/admin-create.ts",
-    "accuracy": "npx tsx scripts/accuracy-check.ts"
+    "accuracy": "npx tsx scripts/accuracy-check.ts",
+    "scrape": "npx tsx scripts/scrape-ballotpedia.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
