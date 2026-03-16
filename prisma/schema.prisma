@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Election {
+  id           String      @id @default(uuid())
+  name         String      // e.g. "2026 Wisconsin State Assembly"
+  type         String      // federal | state | city | local
+  district     String
+  state        String?
+  electionDate DateTime    @map("election_date")
+  status       String      @default("upcoming") // upcoming | active | completed
+
+  candidates   Candidate[]
+  questionSets QuestionSet[]
+  userSessions UserSession[]
+
+  @@map("elections")
+}
+
+model Candidate {
+  id              String   @id @default(uuid())
+  electionId      String   @map("election_id")
+  name            String
+  party           String?
+  incumbent       Boolean  @default(false)
+  officialWebsite String?  @map("official_website")
+  claimed         Boolean  @default(false)
+  claimedBy       String?  @map("claimed_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  election        Election           @relation(fields: [electionId], references: [id])
+  claimedByUser   User?              @relation(fields: [claimedBy], references: [id])
+  rawMaterials    RawMaterial[]
+  positions       CandidatePosition[]
+
+  @@map("candidates")
+}
+
+model IssueCategory {
+  id            String @id @default(uuid())
+  name          String // internal key, e.g. "healthcare"
+  level         String // federal | state | local
+  displayNameEn String @map("display_name_en")
+  displayNameZh String @map("display_name_zh")
+
+  positions CandidatePosition[]
+  questions Question[]
+
+  @@map("issue_categories")
+}
+
+model RawMaterial {
+  id              String   @id @default(uuid())
+  candidateId     String   @map("candidate_id")
+  sourceUrl       String   @map("source_url")
+  sourceType      String   @map("source_type") // official_website | voting_record | news | social_media
+  rawText         String   @map("raw_text")
+  accessDate      DateTime @map("access_date")
+  urlVerified     Boolean  @default(false) @map("url_verified")
+  contentVerified Boolean  @default(false) @map("content_verified")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+
+  @@map("raw_materials")
+}
+
+model CandidatePosition {
+  id                 String   @id @default(uuid())
+  candidateId        String   @map("candidate_id")
+  issueId            String   @map("issue_id")
+  positionSummary    String?  @map("position_summary")
+  positionScore      Float?   @map("position_score") // -2.0 to +2.0
+  confidence         String?  // high | medium | low
+  source             String?  // ai_extracted | candidate_self_report
+  supportingEvidence Json?    @map("supporting_evidence") // [{raw_material_id, relevant_quote}]
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  candidate Candidate     @relation(fields: [candidateId], references: [id])
+  issue     IssueCategory @relation(fields: [issueId], references: [id])
+
+  @@unique([candidateId, issueId])
+  @@map("candidate_positions")
+}
+
+model QuestionSet {
+  id          String   @id @default(uuid())
+  electionId  String   @map("election_id")
+  generatedAt DateTime @default(now()) @map("generated_at")
+
+  election  Election   @relation(fields: [electionId], references: [id])
+  questions Question[]
+
+  @@map("question_sets")
+}
+
+model Question {
+  id                String @id @default(uuid())
+  questionSetId     String @map("question_set_id")
+  issueId           String @map("issue_id")
+  questionText      String @map("question_text")
+  positiveDirection String @map("positive_direction")
+  background        String?
+  displayOrder      Int    @map("display_order")
+
+  questionSet QuestionSet  @relation(fields: [questionSetId], references: [id])
+  issue       IssueCategory @relation(fields: [issueId], references: [id])
+  answers     UserAnswer[]
+
+  @@map("questions")
+}
+
+model UserSession {
+  id         String   @id @default(uuid())
+  electionId String   @map("election_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  election Election     @relation(fields: [electionId], references: [id])
+  answers  UserAnswer[]
+
+  @@map("user_sessions")
+}
+
+model UserAnswer {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  questionId  String   @map("question_id")
+  answer      String   // strongly_agree | agree | neutral | disagree | strongly_disagree | not_interested
+  answerScore Float?   @map("answer_score") // -2.0 to +2.0, null for not_interested
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  session  UserSession @relation(fields: [sessionId], references: [id])
+  question Question    @relation(fields: [questionId], references: [id])
+
+  @@map("user_answers")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   @default("candidate")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  claimedCandidates Candidate[]
+
+  @@map("users")
+}

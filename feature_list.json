@@ -1,0 +1,820 @@
+[
+  {
+    "id": "DB-001",
+    "category": "database",
+    "description": "Prisma schema validates and generates client without errors",
+    "steps": [
+      "Run npx prisma generate",
+      "Verify no errors in output",
+      "Verify src/generated/prisma/ directory is created"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DB-002",
+    "category": "database",
+    "description": "Database migrations run successfully against PostgreSQL",
+    "steps": [
+      "Run npx prisma db push",
+      "Verify all tables are created in PostgreSQL",
+      "Verify elections, candidates, issue_categories, raw_materials, candidate_positions, question_sets, questions, user_sessions, user_answers, users tables exist"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DB-003",
+    "category": "database",
+    "description": "Seed script populates database with sample election data",
+    "steps": [
+      "Run seed script",
+      "Verify at least one election is created",
+      "Verify at least two candidates per election",
+      "Verify issue categories are created",
+      "Verify candidate positions are populated"
+    ],
+    "passes": false
+  },
+  {
+    "id": "DB-004",
+    "category": "database",
+    "description": "Unique constraint on candidate_positions(candidate_id, issue_id) prevents duplicates",
+    "steps": [
+      "Attempt to insert two positions for same candidate+issue",
+      "Verify second insert fails with unique constraint error"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "API-001",
+    "category": "api",
+    "description": "GET /api/elections returns list of elections",
+    "steps": [
+      "Send GET request to /api/elections",
+      "Verify 200 status",
+      "Verify response is JSON array of election objects",
+      "Verify each election has id, name, type, district, electionDate, status"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-002",
+    "category": "api",
+    "description": "GET /api/elections?zip={zipCode} filters elections by zip code",
+    "steps": [
+      "Send GET request with valid zip code",
+      "Verify only elections matching that district are returned",
+      "Send GET request with nonexistent zip code",
+      "Verify empty array is returned"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-003",
+    "category": "api",
+    "description": "GET /api/elections/{electionId}/candidates returns candidates for an election",
+    "steps": [
+      "Send GET request with valid election ID",
+      "Verify 200 status",
+      "Verify response contains candidate objects with id, name, party, incumbent",
+      "Send GET request with invalid election ID",
+      "Verify 404 status"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-004",
+    "category": "api",
+    "description": "GET /api/elections/{electionId}/questions returns question set",
+    "steps": [
+      "Send GET request with valid election ID",
+      "Verify 200 status",
+      "Verify response contains questions array",
+      "Verify each question has questionText, positiveDirection, background, displayOrder",
+      "Verify questions are sorted by displayOrder"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-005",
+    "category": "api",
+    "description": "POST /api/match accepts answers and returns match results",
+    "steps": [
+      "Send POST with election_id and answers array",
+      "Verify 200 status",
+      "Verify response contains candidates array with matchPercentage",
+      "Verify matchPercentage is between 0 and 100",
+      "Verify response contains issueBreakdown per candidate"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-006",
+    "category": "api",
+    "description": "POST /api/match handles 'not_interested' answers correctly",
+    "steps": [
+      "Send POST with some answers as 'not_interested'",
+      "Verify those issues are excluded from match calculation",
+      "Verify matchPercentage is calculated only on answered issues"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-007",
+    "category": "api",
+    "description": "POST /api/match creates anonymous user session",
+    "steps": [
+      "Send POST /api/match with valid data",
+      "Verify a user_session record is created in DB",
+      "Verify user_answers records are created",
+      "Verify no PII is stored in the session"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-008",
+    "category": "api",
+    "description": "GET /api/candidates/{candidateId}/positions returns detailed positions",
+    "steps": [
+      "Send GET request with valid candidate ID",
+      "Verify 200 status",
+      "Verify response contains positions array",
+      "Verify each position has positionSummary, positionScore, confidence, source",
+      "Verify supporting evidence and source links are included"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-009",
+    "category": "api",
+    "description": "API returns proper error responses for invalid inputs",
+    "steps": [
+      "Send POST /api/match with empty body",
+      "Verify 400 status with error message",
+      "Send POST /api/match with invalid election_id",
+      "Verify 404 status",
+      "Send POST /api/match with malformed answers",
+      "Verify 400 status"
+    ],
+    "passes": false
+  },
+  {
+    "id": "API-010",
+    "category": "api",
+    "description": "API endpoints handle missing candidate positions gracefully",
+    "steps": [
+      "Create candidate with no positions",
+      "Request match results",
+      "Verify candidate appears in results with 0% or indication of no data",
+      "Verify no server error occurs"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "MATCH-001",
+    "category": "match-engine",
+    "description": "Match engine calculates correct percentage for identical positions",
+    "steps": [
+      "Provide user answers identical to candidate positions",
+      "Verify matchPercentage is 100.0"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MATCH-002",
+    "category": "match-engine",
+    "description": "Match engine calculates correct percentage for opposite positions",
+    "steps": [
+      "Provide user answers that are exact opposites of candidate positions",
+      "Verify matchPercentage is 0.0"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MATCH-003",
+    "category": "match-engine",
+    "description": "Match engine applies stronger weight to strongly_agree/strongly_disagree",
+    "steps": [
+      "Create scenario where strong stance on one issue vs weak stance on another",
+      "Verify the strongly-held issue has more influence on final score",
+      "Compare with equal-weight scenario to confirm difference"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MATCH-004",
+    "category": "match-engine",
+    "description": "Match engine excludes 'not_interested' issues from calculation",
+    "steps": [
+      "Calculate match with all issues answered",
+      "Calculate match with some issues as not_interested",
+      "Verify not_interested issues don't affect the final percentage"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MATCH-005",
+    "category": "match-engine",
+    "description": "Match engine handles edge case of all issues 'not_interested'",
+    "steps": [
+      "Provide all answers as not_interested (empty userAnswers)",
+      "Verify matchPercentage returns 0 without error"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MATCH-006",
+    "category": "match-engine",
+    "description": "Match engine handles candidate with no position on some issues",
+    "steps": [
+      "Provide user answers for issues where candidate has no position",
+      "Verify those issues are skipped",
+      "Verify calculation only uses issues both parties have positions on"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MATCH-007",
+    "category": "match-engine",
+    "description": "Match engine correctly ranks multiple candidates",
+    "steps": [
+      "Calculate match for 3+ candidates",
+      "Verify candidates are ranked by matchPercentage descending",
+      "Verify ranking reflects actual position alignment"
+    ],
+    "passes": false
+  },
+  {
+    "id": "MATCH-008",
+    "category": "match-engine",
+    "description": "Match engine returns issue-by-issue breakdown",
+    "steps": [
+      "Calculate match result",
+      "Verify issueBreakdown array contains entry for each compared issue",
+      "Verify each entry has userScore, candidateScore, similarity, weight"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "UI-001",
+    "category": "ui-landing",
+    "description": "Landing page loads and displays VoteMatch branding",
+    "steps": [
+      "Navigate to /",
+      "Verify 'VoteMatch' heading is visible",
+      "Verify tagline text is visible",
+      "Verify 'Get Started' button is visible"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-002",
+    "category": "ui-landing",
+    "description": "Landing page 'Get Started' button navigates to quiz flow",
+    "steps": [
+      "Click 'Get Started' button",
+      "Verify navigation to /quiz or district selection page"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-003",
+    "category": "ui-landing",
+    "description": "Landing page is responsive on mobile viewport",
+    "steps": [
+      "Set viewport to 375px width",
+      "Verify all content is visible without horizontal scroll",
+      "Verify text is readable",
+      "Verify button is tappable size (min 44x44px)"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "UI-010",
+    "category": "ui-district",
+    "description": "District selection page allows entering zip code",
+    "steps": [
+      "Navigate to district selection page",
+      "Verify zip code input field is present",
+      "Enter a valid zip code",
+      "Submit the form"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-011",
+    "category": "ui-district",
+    "description": "District selection shows available elections after zip code entry",
+    "steps": [
+      "Enter valid zip code",
+      "Verify elections list appears",
+      "Verify each election shows name and date",
+      "Verify user can select an election"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-012",
+    "category": "ui-district",
+    "description": "District selection shows candidates after election selection",
+    "steps": [
+      "Select an election",
+      "Verify candidates list appears",
+      "Verify each candidate shows name and party",
+      "Verify proceed/continue button appears"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-013",
+    "category": "ui-district",
+    "description": "District selection handles no elections found gracefully",
+    "steps": [
+      "Enter zip code with no matching elections",
+      "Verify friendly message is shown (not error)",
+      "Verify user can try a different zip code"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-014",
+    "category": "ui-district",
+    "description": "District selection validates zip code format",
+    "steps": [
+      "Enter invalid zip code (letters, too short, too long)",
+      "Verify validation error message appears",
+      "Verify form does not submit"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "UI-020",
+    "category": "ui-quiz",
+    "description": "Quiz page displays questions one at a time or in a list",
+    "steps": [
+      "Navigate to quiz page for a valid election",
+      "Verify at least one question is displayed",
+      "Verify question text is visible and readable"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-021",
+    "category": "ui-quiz",
+    "description": "Quiz page shows 6 answer options per question",
+    "steps": [
+      "View a quiz question",
+      "Verify 6 options are shown: Strongly Agree, Agree, Neutral, Disagree, Strongly Disagree, Not Interested",
+      "Verify options are clearly labeled"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-022",
+    "category": "ui-quiz",
+    "description": "Quiz page allows selecting one answer per question",
+    "steps": [
+      "Click on an answer option",
+      "Verify it is visually selected",
+      "Click a different option for the same question",
+      "Verify the first is deselected and the new one is selected"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-023",
+    "category": "ui-quiz",
+    "description": "Quiz page has expandable background explanation per question",
+    "steps": [
+      "View a quiz question",
+      "Verify background expand trigger is visible",
+      "Click to expand background",
+      "Verify background text appears",
+      "Click to collapse",
+      "Verify background text is hidden"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-024",
+    "category": "ui-quiz",
+    "description": "Quiz page shows progress indicator",
+    "steps": [
+      "Start the quiz",
+      "Verify progress indicator shows current question / total questions",
+      "Answer a question and advance",
+      "Verify progress indicator updates"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-025",
+    "category": "ui-quiz",
+    "description": "Quiz page submit button sends answers to match API",
+    "steps": [
+      "Answer all questions",
+      "Click submit/see results button",
+      "Verify POST request is sent to /api/match",
+      "Verify request contains election_id and answers array"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-026",
+    "category": "ui-quiz",
+    "description": "Quiz page handles partial completion (not all questions answered)",
+    "steps": [
+      "Answer only some questions",
+      "Click submit",
+      "Verify unanswered questions are either prompted or treated as not_interested"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-027",
+    "category": "ui-quiz",
+    "description": "Quiz page is responsive on mobile viewport",
+    "steps": [
+      "Set viewport to 375px width",
+      "Verify questions and options are fully visible",
+      "Verify options are tappable without overlap",
+      "Verify no horizontal scroll"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-028",
+    "category": "ui-quiz",
+    "description": "Quiz page uses plain language at 6th-grade reading level",
+    "steps": [
+      "Read each question text",
+      "Verify no political jargon or technical terms",
+      "Verify sentences are short and clear",
+      "Verify one concept per question"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "UI-030",
+    "category": "ui-results",
+    "description": "Results page shows match ranking with percentages",
+    "steps": [
+      "Complete quiz and view results",
+      "Verify each candidate is listed with name and match percentage",
+      "Verify candidates are ordered by match percentage descending",
+      "Verify wording says 'policy positions are closest to yours' not 'vote for'"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-031",
+    "category": "ui-results",
+    "description": "Results page shows issue-by-issue comparison",
+    "steps": [
+      "View results page",
+      "Navigate to or expand issue-by-issue comparison",
+      "Verify each issue shows user's choice vs each candidate's position",
+      "Verify match/mismatch is visually indicated"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-032",
+    "category": "ui-results",
+    "description": "Results page shows source attribution for candidate positions",
+    "steps": [
+      "View candidate position in results",
+      "Verify source label is shown (official website / voting record / candidate self-report)",
+      "Verify source link is clickable and opens in new tab"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-033",
+    "category": "ui-results",
+    "description": "Results page shows 'No public position found' when applicable",
+    "steps": [
+      "View results for candidate with missing positions",
+      "Verify 'No public position found' label appears for that issue",
+      "Verify it is clearly distinguished from actual positions"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-034",
+    "category": "ui-results",
+    "description": "Results page is responsive on mobile viewport",
+    "steps": [
+      "Set viewport to 375px width",
+      "Verify match ranking is readable",
+      "Verify issue comparison is navigable",
+      "Verify no horizontal scroll"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-035",
+    "category": "ui-results",
+    "description": "Results page handles candidate with conflicting self-report vs public record",
+    "steps": [
+      "View results for candidate with both ai_extracted and candidate_self_report positions",
+      "Verify both are displayed",
+      "Verify they are clearly labeled and distinguished"
+    ],
+    "passes": false
+  },
+  {
+    "id": "UI-036",
+    "category": "ui-results",
+    "description": "Results page allows navigating back to retake quiz",
+    "steps": [
+      "View results page",
+      "Find 'Retake Quiz' or back navigation",
+      "Click it",
+      "Verify user returns to quiz with answers cleared"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "NAV-001",
+    "category": "navigation",
+    "description": "Full user flow works end-to-end: landing → district → quiz → results",
+    "steps": [
+      "Start at landing page",
+      "Click Get Started",
+      "Enter zip code and select election",
+      "Answer all quiz questions",
+      "Submit and view results",
+      "Verify match percentages are displayed correctly"
+    ],
+    "passes": false
+  },
+  {
+    "id": "NAV-002",
+    "category": "navigation",
+    "description": "Browser back button works correctly through the flow",
+    "steps": [
+      "Complete the quiz flow to results",
+      "Press browser back button",
+      "Verify return to quiz page with answers preserved",
+      "Press back again",
+      "Verify return to district selection"
+    ],
+    "passes": false
+  },
+  {
+    "id": "NAV-003",
+    "category": "navigation",
+    "description": "Direct URL navigation to /quiz without election context redirects",
+    "steps": [
+      "Navigate directly to /quiz without prior district selection",
+      "Verify redirect to district selection or helpful error message"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "PRIVACY-001",
+    "category": "privacy",
+    "description": "User sessions are anonymous — no PII stored",
+    "steps": [
+      "Complete a quiz",
+      "Check user_sessions table",
+      "Verify no IP address, device info, or cookies linking to identity",
+      "Verify session only has election_id and created_at"
+    ],
+    "passes": false
+  },
+  {
+    "id": "PRIVACY-002",
+    "category": "privacy",
+    "description": "No user registration required for core voter flow",
+    "steps": [
+      "Navigate through entire flow: landing → district → quiz → results",
+      "Verify no login/signup prompt appears",
+      "Verify no authentication headers required in API calls"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "PERF-001",
+    "category": "performance",
+    "description": "Quiz page loads within 3 seconds on simulated 3G connection",
+    "steps": [
+      "Throttle network to slow 3G",
+      "Navigate to quiz page",
+      "Verify page is interactive within 3 seconds"
+    ],
+    "passes": false
+  },
+  {
+    "id": "PERF-002",
+    "category": "performance",
+    "description": "Match calculation completes within 500ms for 15 questions × 5 candidates",
+    "steps": [
+      "Set up 5 candidates with 15 issue positions each",
+      "Submit 15 answers via /api/match",
+      "Verify response time is under 500ms"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "NEUTRAL-001",
+    "category": "neutrality",
+    "description": "Question wording contains no leading language",
+    "steps": [
+      "Review all generated questions",
+      "Verify no emotionally charged words",
+      "Verify no implied correct answer",
+      "Verify balanced framing"
+    ],
+    "passes": false
+  },
+  {
+    "id": "NEUTRAL-002",
+    "category": "neutrality",
+    "description": "Match algorithm gives no advantage to any candidate regardless of data source",
+    "steps": [
+      "Compare match calculation for ai_extracted vs candidate_self_report positions",
+      "Verify identical treatment in scoring",
+      "Verify no bonus or penalty for claimed profiles"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "SEED-001",
+    "category": "seed-data",
+    "description": "Seed data covers a realistic election scenario",
+    "steps": [
+      "Run seed script",
+      "Verify at least 1 election with 3+ candidates",
+      "Verify at least 10 issue categories",
+      "Verify positions cover high/medium/low confidence",
+      "Verify questions are pre-generated for the election"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SEED-002",
+    "category": "seed-data",
+    "description": "Seed data includes candidates with missing positions for edge case testing",
+    "steps": [
+      "Verify at least one candidate has positions on only some issues",
+      "Verify at least one issue has 'position unclear' or low confidence",
+      "Verify results display handles these gracefully"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "A11Y-001",
+    "category": "accessibility",
+    "description": "Quiz page is keyboard-navigable",
+    "steps": [
+      "Tab through quiz page",
+      "Verify all answer options are focusable",
+      "Verify Enter/Space selects an answer",
+      "Verify submit button is reachable via Tab"
+    ],
+    "passes": false
+  },
+  {
+    "id": "A11Y-002",
+    "category": "accessibility",
+    "description": "All interactive elements have proper aria labels",
+    "steps": [
+      "Inspect answer option elements",
+      "Verify radio inputs or buttons have aria-label or associated label",
+      "Verify progress indicator has aria-valuenow/aria-valuemax"
+    ],
+    "passes": false
+  },
+  {
+    "id": "A11Y-003",
+    "category": "accessibility",
+    "description": "Color contrast meets WCAG AA standards",
+    "steps": [
+      "Check text contrast ratios on landing, quiz, and results pages",
+      "Verify body text has at least 4.5:1 contrast ratio",
+      "Verify headings have at least 3:1 contrast ratio"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "ERR-001",
+    "category": "error-handling",
+    "description": "API errors return structured JSON error responses",
+    "steps": [
+      "Send malformed request to each API endpoint",
+      "Verify all return JSON with error field",
+      "Verify appropriate HTTP status codes (400, 404, 500)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ERR-002",
+    "category": "error-handling",
+    "description": "UI shows user-friendly error when API fails",
+    "steps": [
+      "Simulate API failure (stop server or mock error)",
+      "Attempt quiz submission",
+      "Verify user-friendly error message appears (not raw error)",
+      "Verify user can retry"
+    ],
+    "passes": false
+  },
+  {
+    "id": "ERR-003",
+    "category": "error-handling",
+    "description": "UI handles network timeout gracefully",
+    "steps": [
+      "Simulate slow network",
+      "Submit quiz",
+      "Verify loading indicator appears",
+      "Simulate timeout",
+      "Verify timeout message and retry option"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "BUILD-001",
+    "category": "build",
+    "description": "Project builds without errors (npm run build)",
+    "steps": [
+      "Run npm run build",
+      "Verify exit code 0",
+      "Verify no TypeScript errors",
+      "Verify .next build output is generated"
+    ],
+    "passes": false
+  },
+  {
+    "id": "BUILD-002",
+    "category": "build",
+    "description": "ESLint passes without errors",
+    "steps": [
+      "Run npm run lint",
+      "Verify exit code 0",
+      "Verify no lint errors"
+    ],
+    "passes": false
+  },
+  {
+    "id": "BUILD-003",
+    "category": "build",
+    "description": "Dev server starts and serves pages",
+    "steps": [
+      "Run npm run dev",
+      "Verify server starts on port 3000",
+      "Navigate to http://localhost:3000",
+      "Verify landing page loads"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "I18N-001",
+    "category": "i18n",
+    "description": "UI text is externalized and ready for multi-language support",
+    "steps": [
+      "Verify UI strings are not hardcoded in components",
+      "Verify a translation mechanism is in place or planned",
+      "Verify language can be switched without code changes"
+    ],
+    "passes": false
+  },
+
+  {
+    "id": "SEO-001",
+    "category": "seo",
+    "description": "Landing page has proper meta tags for SEO",
+    "steps": [
+      "View page source of landing page",
+      "Verify <title> contains 'VoteMatch'",
+      "Verify <meta name='description'> is present and descriptive",
+      "Verify SSR renders the content (not client-only)"
+    ],
+    "passes": false
+  },
+  {
+    "id": "SEO-002",
+    "category": "seo",
+    "description": "Results page is server-rendered for shareability",
+    "steps": [
+      "View page source of a results page",
+      "Verify candidate match data is in the HTML (not loaded client-side only)"
+    ],
+    "passes": false
+  }
+]
