@@ -6,7 +6,7 @@
  */
 
 const CIVIC_API_BASE =
-  "https://www.googleapis.com/civicinfo/v2/voterInfoQuery";
+  "https://www.googleapis.com/civicinfo/v2/voterinfo";
 
 export interface CivicCandidate {
   name: string;

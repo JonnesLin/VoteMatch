@@ -27,7 +27,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "district.searching": "Searching...",
     "district.search": "Search",
     "district.noElections":
-      "No elections found for zip code {zip}. Try a different zip code.",
+      "No upcoming elections found for this area. Check back closer to election season.",
+    "district.unrecognizedZip":
+      "Could not recognize zip code {zip}. Please check and try again.",
     "district.electionsTitle": "Elections in your area",
     "district.candidatesTitle": "Candidates",
     "district.loadingCandidates": "Loading candidates...",
@@ -146,7 +148,9 @@ export const messages: Record<Locale, Record<string, string>> = {
     "district.searching": "搜索中...",
     "district.search": "搜索",
     "district.noElections":
-      "未找到邮编 {zip} 对应的选举。请尝试其他邮编。",
+      "该地区当前无即将到来的选举，请在选举季前再来查看。",
+    "district.unrecognizedZip":
+      "无法识别邮编 {zip}，请检查后重试。",
     "district.electionsTitle": "你所在地区的选举",
     "district.candidatesTitle": "候选人",
     "district.loadingCandidates": "加载候选人...",

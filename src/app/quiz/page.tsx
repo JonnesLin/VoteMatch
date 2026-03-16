@@ -52,7 +52,11 @@ export default function QuizPage() {
       );
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        setZipError(body?.error ?? `Request failed (${res.status})`);
+        if (body?.error === "unrecognized_zip") {
+          setZipError(t("district.unrecognizedZip", { zip: address }));
+        } else {
+          setZipError(body?.error ?? `Request failed (${res.status})`);
+        }
         setLoading(false);
         return;
       }
@@ -71,7 +75,11 @@ export default function QuizPage() {
     const res = await fetch(`/api/elections?zip=${zip}`);
     if (!res.ok) {
       const body = await res.json().catch(() => null);
-      setZipError(body?.error ?? `Request failed (${res.status})`);
+      if (body?.error === "unrecognized_zip") {
+        setZipError(t("district.unrecognizedZip", { zip }));
+      } else {
+        setZipError(body?.error ?? `Request failed (${res.status})`);
+      }
       setLoading(false);
       return;
     }

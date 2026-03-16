@@ -87,7 +87,7 @@
     "steps": [
       "Read src/lib/civic-api.ts",
       "Verify returnAllAvailableData=true is included in API request params",
-      "This is critical — without it, bare zip codes cause API errors"
+      "This is critical \u2014 without it, bare zip codes cause API errors"
     ],
     "passes": true
   },
@@ -148,7 +148,7 @@
       "Verify elections were upserted into database",
       "Verify response includes election name, district, type, electionDate, state"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CIVIC-ROUTE-003",
@@ -160,7 +160,7 @@
       "Verify response is JSON array of Election objects",
       "Verify same Civic API codepath is used for both zip and address"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CIVIC-ROUTE-004",
@@ -189,11 +189,11 @@
   {
     "id": "CIVIC-ROUTE-006",
     "category": "elections-route",
-    "description": "Election name format: '{election.name} — {contest.office}'",
+    "description": "Election name format: '{election.name} \u2014 {contest.office}'",
     "steps": [
       "Read src/app/api/elections/route.ts",
       "Verify election name uses em-dash separator between election name and contest office",
-      "Example output: '2026 Wisconsin General Election — State Assembly District 42'"
+      "Example output: '2026 Wisconsin General Election \u2014 State Assembly District 42'"
     ],
     "passes": true
   },
@@ -214,10 +214,10 @@
     "description": "Scope-to-type mapping correctly maps all 14 district.scope values to Election.type",
     "steps": [
       "Read the scope mapping code in elections route or civic-api module",
-      "Verify national → federal",
-      "Verify congressional → federal",
-      "Verify statewide, stateUpper, stateLower → state",
-      "Verify countywide, countyCouncil, citywide, cityCouncil, ward, township, schoolBoard, judicial, special → local",
+      "Verify national \u2192 federal",
+      "Verify congressional \u2192 federal",
+      "Verify statewide, stateUpper, stateLower \u2192 state",
+      "Verify countywide, countyCouncil, citywide, cityCouncil, ward, township, schoolBoard, judicial, special \u2192 local",
       "Verify unknown/missing scope defaults to local"
     ],
     "passes": true
@@ -275,7 +275,7 @@
     "steps": [
       "Read .env.example",
       "Verify GOOGLE_CIVIC_API_KEY line exists with placeholder value",
-      "Verify comment explains: Google Cloud Console → APIs & Services → Enable Civic API → Create key"
+      "Verify comment explains: Google Cloud Console \u2192 APIs & Services \u2192 Enable Civic API \u2192 Create key"
     ],
     "passes": true
   },
@@ -304,30 +304,30 @@
   {
     "id": "CIVIC-UPSERT-001",
     "category": "upsert-logic",
-    "description": "Election upsert on (district, electionDate) is idempotent — no duplicates",
+    "description": "Election upsert on (district, electionDate) is idempotent \u2014 no duplicates",
     "steps": [
       "Call GET /api/elections?address=... twice with same address",
       "Verify same Election rows returned both times (same IDs)",
       "Query database directly: no duplicate (district, electionDate) pairs",
       "Verify updatedAt timestamp is refreshed on second call"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CIVIC-UPSERT-002",
     "category": "upsert-logic",
-    "description": "Candidate upsert on (electionId, name) is idempotent — no duplicates",
+    "description": "Candidate upsert on (electionId, name) is idempotent \u2014 no duplicates",
     "steps": [
       "Call GET /api/elections?address=... twice with same address",
       "Verify same Candidate rows exist after both calls (same IDs)",
       "Query database directly: no duplicate (electionId, name) pairs"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CIVIC-COMPAT-001",
     "category": "compatibility",
-    "description": "quiz/page.tsx works without code changes — Election[] response shape unchanged",
+    "description": "quiz/page.tsx works without code changes \u2014 Election[] response shape unchanged",
     "steps": [
       "Navigate to /quiz in browser",
       "Enter a zip code and submit",
@@ -335,7 +335,7 @@
       "Verify election selection shows candidates",
       "Verify Start Quiz button navigates to quiz page"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CIVIC-COMPAT-002",
@@ -346,7 +346,7 @@
       "Verify district field shows full name like \"Wisconsin's 42nd State Assembly district\"",
       "Verify this renders correctly in the election list on /quiz page"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "CIVIC-TEST-001",
@@ -366,9 +366,9 @@
     "description": "Unit tests for civic-api.ts cover empty results and API errors",
     "steps": [
       "Run npm run test",
-      "Verify test for empty contests → returns { contests: [] }",
-      "Verify test for HTTP 500 → throws Error",
-      "Verify test for network timeout → throws Error"
+      "Verify test for empty contests \u2192 returns { contests: [] }",
+      "Verify test for HTTP 500 \u2192 throws Error",
+      "Verify test for network timeout \u2192 throws Error"
     ],
     "passes": true
   },
@@ -387,7 +387,7 @@
   {
     "id": "CIVIC-TEST-004",
     "category": "testing",
-    "description": "All existing tests (24+) continue to pass — no regressions",
+    "description": "All existing tests (24+) continue to pass \u2014 no regressions",
     "steps": [
       "Run npm run test",
       "Verify all pre-existing tests pass",

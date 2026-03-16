@@ -74,7 +74,7 @@ describe("lookupElections", () => {
 
     const calledUrl = (global.fetch as ReturnType<typeof vi.fn>).mock
       .calls[0][0] as string;
-    expect(calledUrl).toContain("civicinfo/v2/voterInfoQuery");
+    expect(calledUrl).toContain("civicinfo/v2/voterinfo");
     expect(calledUrl).toContain("address=53703");
     expect(calledUrl).toContain("key=test-key");
     expect(calledUrl).toContain("returnAllAvailableData=true");
