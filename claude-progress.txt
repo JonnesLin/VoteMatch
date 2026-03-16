@@ -1,3 +1,51 @@
+## Session 2026-03-16 — Coding Agent (Session 18: Final Verification & Commit)
+
+### What was done
+Resumed harness, verified current state, committed all Session 17 work.
+
+**Verification**
+- npm run test: 36/36 pass ✅
+- npm run build: zero errors ✅
+- npm run lint: zero errors ✅
+- GET /api/elections (no filter): returns seed election with correct shape ✅
+- GET /api/elections?zip=53703 (no API key): returns 422 with helpful error ✅
+- Election[] response shape is backward compatible with quiz page ✅
+
+**Committed**
+- fd015bc: Replace Census Geocoder with Google Civic Information API integration (16 files, +1106/-111)
+
+### Feature list status
+- Main: 163/164 passing (99.4%) — INFRA-005 (custom domain) needs user action
+- Civic API: 28/34 passing (82.4%) — 6 features blocked on GOOGLE_CIVIC_API_KEY
+
+### Remaining: 6 features (all need GOOGLE_CIVIC_API_KEY)
+| Feature | What's needed |
+|---------|---------------|
+| CIVIC-ROUTE-002 | Live API test: address → upserted elections |
+| CIVIC-ROUTE-003 | Live API test: zip → Civic API lookup |
+| CIVIC-UPSERT-001 | Live API test: idempotent election upsert |
+| CIVIC-UPSERT-002 | Live API test: idempotent candidate upsert |
+| CIVIC-COMPAT-001 | Browser test: quiz page with Civic API data |
+| CIVIC-COMPAT-002 | Browser test: district names in UI |
+
+### How to complete remaining features
+```bash
+# 1. Get API key: Google Cloud Console → APIs & Services → Enable Civic Information API → Create key
+# 2. Add to .env:
+echo "GOOGLE_CIVIC_API_KEY=your_key_here" >> .env
+# 3. Test address lookup:
+curl "http://localhost:3000/api/elections?address=123+Main+St+Madison+WI+53703"
+# 4. Test zip lookup:
+curl "http://localhost:3000/api/elections?zip=53703"
+# 5. Test idempotency: run same request twice, verify same IDs returned
+# 6. Browser test: navigate to /quiz, enter zip, verify elections + candidates display
+```
+
+### Task status: CODE COMPLETE
+All coding work for the Civic API integration is done. Remaining features are purely live verification with the API key.
+
+---
+
 ## Session 2026-03-16 — Coding Agent (Session 17: Google Civic API Integration)
 
 ### What was done
